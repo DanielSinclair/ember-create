@@ -1,0 +1,9 @@
+{
+  "name": "Water",
+  "id": "water",
+  "prompt": "Build a compact hydration tracker named Water with a large glasses count, Add glass button, undo button, reset button, and daily goal progress. Use only Contract state for this first demo; no data sources.",
+  "provider": "openrouter",
+  "createdAt": "2026-11-10T03:39:09.912Z",
+  "updatedAt": "2026-11-10T03:39:09.912Z",
+  "demo": true
+}

@@ -1,0 +1,119 @@
+shape ProjectChoice
+  id: string
+  name: string
+  demo: bool
+
+shape Session
+  busy: bool
+  status: string
+  output: string
+  attachment: string
+  picker: bool
+  projects: ProjectChoice[]
+
+shape Ack
+  ok: bool
+
+shape Inspection
+  attached: bool
+  input: string
+
+component Creator
+  resource session = session() as shape Session
+  mutation requested as shape Ack
+  mutation inspected as shape Inspection queue then afterInspection
+  state draft = ""
+  state tick = 0
+  state choice = 0
+  task spin when session.busy
+    every(250, step)
+  action step
+    tick = tick + 1
+  action write(v: string)
+    draft = v
+    send inspected = inspectInput(v)
+  action afterInspection
+    match inspected
+      case some(result)
+        if result.attached and draft == result.input
+          draft = ""
+      case none
+        draft = draft
+  action submit
+    if draft.trim() != "" and not session.busy
+      send requested = submit(draft.trim())
+      draft = ""
+  action launch
+    if not session.busy
+      send requested = launchSimulator()
+  action builds
+    if not session.busy
+      choice = 0
+      send requested = showBuilds()
+  action choose(id: string)
+    if not session.busy
+      send requested = installProject(id)
+  action hideBuilds
+    send requested = closePicker()
+  action onKey(key: string, e: KeyboardEvent)
+    if key == "b" and e.ctrlKey
+      builds()
+      preventDefault()
+    else if session.picker and key == "Escape"
+      hideBuilds()
+      preventDefault()
+    else if session.picker and key == "ArrowDown"
+      choice = min(choice + 1, max(0, session.projects.length - 1))
+      preventDefault()
+    else if session.picker and key == "ArrowUp"
+      choice = max(0, choice - 1)
+      preventDefault()
+    else if session.picker and key == "Enter"
+      match session.projects.at(choice)
+        case some(project)
+          choose(project.id)
+        case none
+          choice = 0
+      preventDefault()
+    else if key == "o" and e.ctrlKey
+      launch()
+      preventDefault()
+    else
+      if key == "Enter" and not e.shiftKey and not e.altKey
+        submit()
+        preventDefault()
+
+  view
+    column height="100%" box-sizing="border-box" background-color="#000000" color="#eeeeee" padding="1lh 2ch"
+      row gap="2ch" padding-bottom="1lh"
+        text "Muse Ember" color="#888888" margin-left="auto"
+      scroll flex=1 min-height=0 scrollFollowEnd=true testId="transcript-scroll"
+        if session.output == ""
+          column gap="1lh" padding-top="2lh"
+            text "What do you want to build?" font-weight=700 testId="welcome"
+            text "Describe an iOS app. Muse Ember will name it and write its contract." color="#999999"
+            text "Drop an image into the composer to attach a reference." color="#777777"
+        else
+          text session.output white-space="pre-wrap" role="log" testId="transcript"
+      column flex-shrink=0 gap="1lh" padding-top="1lh"
+        if session.picker
+          column border="thin solid #555555" padding="1lh 1ch" gap="1lh" testId="build-picker"
+            text "Your builds" font-weight=700
+            if session.projects.length == 0
+              text (session.busy ? "Loading builds…" : "No builds yet. Describe an app to create one.") color="#aaaaaa"
+            else
+              scroll max-height="8lh"
+                column
+                  for project, i in session.projects key=project.id
+                    button appearance="none" press=choose(project.id) disabled=session.busy text-align="start" padding="0 1ch" background-color=(i == choice ? "#eeeeee" : "#000000") color=(i == choice ? "#000000" : "#cccccc") testId=`build-${project.id}`
+                      text `${project.name}${project.demo ? " [Demo]" : ""}`
+            text "↑ ↓ choose · enter install and open · esc close" color="#888888"
+        row gap="1ch"
+          text (session.busy ? (tick % 2 == 0 ? "●" : "○") : "·") color="#cccccc"
+          text session.status color="#999999" testId="status"
+        if session.attachment != ""
+          text `image · ${session.attachment}` color="#aaaaaa" testId="attachment"
+        row border="thin solid #555555" padding="0 1ch" gap="1ch"
+          text ">" font-weight=700
+          textarea value=draft appearance="none" input=write key=onKey autofocus=true placeholder=(session.busy ? "Working… you can draft your next prompt" : "Build an app…") flex=1 min-width=0 rows=min(4, draft.split("\n").length) testId="prompt"
+        text "enter send   ctrl+b builds   ctrl+o simulator   /edit   /image" color="#777777"

@@ -1,0 +1,75 @@
+use healthStatus, requestHealthAuthorization, healthStatistics, HealthStatus, HealthStatistics from "@exact/health"
+
+shape Time
+  epochAtZero: number
+  utcOffset: number
+
+shape DayBounds
+  start: number
+  end: number
+
+component Pedometer
+  state elapsed = 0
+  resource time = exactTime() as shape Time
+  resource day = dayBounds(time.epochAtZero + elapsed) as shape DayBounds
+  resource health = healthStatus(read=["steps"]) as shape HealthStatus else empty()
+  resource steps = healthStatistics(type="steps", start=day.start, end=day.end, interval="P1D") as shape HealthStatistics else empty()
+  mutation asked as shape HealthStatus then refreshToday
+  derive total = match steps.buckets.at(0) { case some(bucket) => bucket.value, case none => none }
+  derive hasAsked = health.state != "prompt"
+
+  task clock mount
+    every(60000, refreshToday)
+  action refreshToday
+    elapsed = performanceNow()
+  action connect
+    send asked = requestHealthAuthorization(read=["steps"])
+
+  view
+    column height="100%" background-color="-exact-background"
+      header
+        h1 "Stride" testId="title"
+      scroll flex=1 min-height=0
+        column padding=24 gap=28 max-width=520 align-self="center"
+          column gap=6
+            text "MOVE AT YOUR OWN PACE" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+            text formatDate(time.epochAtZero + elapsed, time.utcOffset, "medium") font="-exact-title2" testId="date"
+          column gap=16 padding="36 24" background-color="-exact-secondary-grouped-background" border-radius=28
+            text "TODAY" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+            if pending(health)
+              text "Checking Apple Health…" testId="health-loading"
+            else if not health.available
+              text "Apple Health unavailable" font="-exact-title2" testId="unavailable"
+              text "Open Stride on a supported iPhone to read your steps." color="-exact-secondary-label"
+            else if not hasAsked
+              text "Every step counts." font="-exact-title1" testId="connect-title"
+              text "Connect Apple Health to see today's steps from the sources you share." color="-exact-secondary-label"
+            else if pending(steps)
+              text "Reading today's steps…" testId="steps-loading"
+            else if failed(steps)
+              text "Couldn't read steps" font="-exact-title2" testId="read-error"
+              text "Apple Health may be locked or temporarily unavailable. Unlock your device and try Refresh." color="-exact-secondary-label"
+            else
+              match total
+                case some(count)
+                  text `${round(count)}` font-size=72 font-weight=700 font-variant-numeric="tabular-nums" testId="steps"
+                  text "steps shared today" font="-exact-title3" color="-exact-secondary-label"
+                case none
+                  text "No steps to show yet" font="-exact-title2" testId="no-data"
+                  text "There may be no samples today, or Apple Health may not be sharing them. You can review access in Health's sharing settings." color="-exact-secondary-label"
+          if health.available
+            column gap=12
+              button press=connect buttonStyle="filled" disabled=pending(asked) testId="connect"
+                text (hasAsked ? "Review Health access" : "Connect Apple Health")
+              if hasAsked
+                button press=refreshToday buttonStyle="bordered" disabled=pending(steps) testId="refresh"
+                  text "Refresh"
+          match failure(asked)
+            case some(error)
+              text "Couldn't open Health authorization. Please try again." color="-exact-system-red" testId="authorization-error"
+            case none
+              text "" testId="authorization-error"
+          column gap=10 padding="8 0"
+            text "Private by design" font="-exact-headline"
+            text "Your steps come directly from Apple Health and stay on this device. Stride never writes health data." color="-exact-secondary-label"
+            text "Apple does not reveal whether read access was declined. An empty result is never treated as zero steps or denied access." font="-exact-footnote" color="-exact-secondary-label" testId="privacy-note"

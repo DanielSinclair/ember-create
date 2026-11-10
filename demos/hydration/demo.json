@@ -1,0 +1,9 @@
+{
+  "name": "Hydration",
+  "id": "hydration",
+  "prompt": "A minimal hydration counter with an Add water button adding 250 mL and a Reset button. Use only Contract state, no TypeScript sources. Include behavior tests.",
+  "provider": "codex",
+  "createdAt": "2026-11-10T03:45:20.480Z",
+  "updatedAt": "2026-11-10T03:45:20.480Z",
+  "demo": true
+}

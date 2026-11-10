@@ -1,0 +1,4 @@
+test "health explanation is visible without fabricating a step total"
+  expect text "title" == "Stride"
+  expect tree has "privacy-note"
+  expect tree missing "steps"

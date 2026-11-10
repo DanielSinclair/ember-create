@@ -1,0 +1,15 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "container",
+      "dependencies": {
+        "@exact/health": "file:../exact/packages/health",
+      },
+    },
+  },
+  "packages": {
+    "@exact/health": ["@exact/health@file:../exact/packages/health", {}],
+  }
+}

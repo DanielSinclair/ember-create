@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+launcher=$0
+while [ -L "$launcher" ]; do
+  directory=$(CDPATH= cd -- "$(dirname -- "$launcher")" && pwd)
+  launcher=$(readlink "$launcher")
+  case "$launcher" in /*) ;; *) launcher="$directory/$launcher" ;; esac
+done
+ROOT=$(CDPATH= cd -- "$(dirname -- "$launcher")/.." && pwd)
+if [ "$#" -eq 0 ]; then exec sh "$ROOT/tui/run.sh"; fi
+if [ -f "$ROOT/.env" ]; then
+  set -- --env-file "$ROOT/.env" "$ROOT/src/cli.ts" "$@"
+else
+  set -- "$ROOT/src/cli.ts" "$@"
+fi
+if [ -n "${BUN:-}" ]; then exec "$BUN" "$@"; fi
+if [ -x "$HOME/.bun-1.4.2/bin/bun" ]; then exec "$HOME/.bun-1.4.2/bin/bun" "$@"; fi
+exec bun "$@"

@@ -1,0 +1,17 @@
+.exact-create/
+/exact/
+/exact-templates/
+node_modules/
+target/
+tui/target/
+container/.exact/
+container/target/
+container/node_modules/
+container/app.contract
+container/app.ts
+container/app.test.contract
+container/app.contract.d.ts
+.DS_Store
+.env
+.env.*
+!.env.example

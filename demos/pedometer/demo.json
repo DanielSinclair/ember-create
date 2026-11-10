@@ -1,0 +1,9 @@
+{
+  "id": "pedometer",
+  "name": "Stride",
+  "prompt": "A private daily pedometer using Apple HealthKit, with explicit permission, refresh, and honest empty states.",
+  "provider": "manual-healthkit-demo",
+  "createdAt": "2026-11-10T03:42:45.103Z",
+  "updatedAt": "2026-11-10T03:42:45.103Z",
+  "demo": true
+}

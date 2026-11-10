@@ -1,0 +1,28 @@
+component HydrationApp
+  state total = 0
+
+  action addWater
+    total = total + 250
+
+  action reset
+    total = 0
+
+  view
+    column height="100%"
+      header
+        h1 "Hydration"
+      scroll flex=1 min-height=0
+        column padding=24 gap=28 max-width=520 align-self="center"
+          column gap=6
+            text "A MOMENT TO RECHARGE" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+            text "Keep the good habit flowing." font="-exact-title1"
+          column gap=16 align-items="center" padding="40 24" background-color="-exact-secondary-grouped-background" border-radius=28
+            text "WATER ADDED" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+            text `${total} mL` font-size=64 font-weight=700 font-variant-numeric="tabular-nums" testId="total"
+            text "Small sips add up." font="-exact-title3" color="-exact-secondary-label"
+          column gap=14
+            button press=addWater buttonStyle="filled" testId="add-water"
+              text "Add water"
+            text "+250 mL per tap" font="-exact-footnote" color="-exact-secondary-label" text-align="center"
+            button press=reset buttonStyle="bordered" testId="reset"
+              text "Reset"

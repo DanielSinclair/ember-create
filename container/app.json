@@ -1,0 +1,29 @@
+{
+  "$schema": "../exact/scripts/app.schema.json",
+  "name": "Exact Create",
+  "short_name": "Exact Create",
+  "id": "com.exactcreate.demo",
+  "start_url": "/",
+  "display": "standalone",
+  "app": {
+    "id": "com.exactcreate.demo",
+    "name": "Exact Create"
+  },
+  "host": {
+    "web": {},
+    "ios": {
+      "minimumOS": "17.0",
+      "deviceFamily": [
+        "iphone",
+        "ipad"
+      ],
+      "localNetworking": "Connect to the local Exact Create preview server."
+    }
+  },
+  "deploy": {
+    "store": {
+      "web": "0",
+      "ios": "0"
+    }
+  }
+}

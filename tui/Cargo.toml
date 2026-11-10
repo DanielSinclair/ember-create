@@ -1,0 +1,22 @@
+[package]
+name = "exact-create-tui"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+exact-terminal = { path = "../exact/host/terminal" }
+exact-plan = { path = "../exact/plan" }
+exact-runner = { path = "../exact/runner" }
+serde_json = "1"
+
+[build-dependencies]
+contract = { path = "../exact/contract/cli" }
+
+[patch.crates-io]
+taffy = { path = "../exact/vendor/taffy" }
+
+[profile.dev]
+opt-level = 1

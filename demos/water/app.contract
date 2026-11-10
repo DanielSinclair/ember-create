@@ -1,0 +1,43 @@
+component Water
+  state glasses = 0
+  state goal = 8
+
+  derive remaining = glasses >= goal ? 0 : goal - glasses
+  derive percent = glasses >= goal ? 100 : round(glasses / goal * 100)
+  derive status = glasses >= goal ? "Goal reached!" : `${remaining} ${remaining == 1 ? "glass" : "glasses"} to go`
+
+  action addGlass
+    glasses = glasses + 1
+  action undoGlass
+    if glasses > 0
+      glasses = glasses - 1
+  action reset
+    glasses = 0
+
+  view
+    column height="100%" testId="app"
+      header
+        h1 "Water"
+      scroll id="main" flex=1 min-height=0
+        column padding=24 gap=24 max-width=520 align-self="center"
+          column gap=6
+            text "MAKE ROOM FOR A WATER BREAK" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+            text "One glass at a time." font="-exact-title1"
+          column align-items="center" gap=12 padding="32 24" background-color="-exact-secondary-grouped-background" border-radius=28
+            text "TODAY" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+            text `${glasses}` font-size=80 font-weight=700 font-variant-numeric="tabular-nums" testId="glasses-count"
+            text "glasses of water" font="-exact-title3" color="-exact-secondary-label"
+            text status font="-exact-headline" testId="status"
+          row gap=16 align-items="center"
+            column flex=1 min-width=0 gap=4
+              text "Daily goal" font="-exact-footnote" color="-exact-secondary-label"
+              text `${glasses} of ${goal} glasses` font="-exact-headline" testId="progress"
+            text `${percent}%` font="-exact-title1" font-variant-numeric="tabular-nums" testId="percent"
+          column gap=12
+            button press=addGlass buttonStyle="filled" testId="add-glass"
+              text "Add glass"
+            row gap=12
+              button press=undoGlass disabled=(glasses == 0) buttonStyle="bordered" flex=1 testId="undo-glass"
+                text "Undo"
+              button press=reset disabled=(glasses == 0) buttonStyle="bordered" flex=1 testId="reset"
+                text "Reset"
