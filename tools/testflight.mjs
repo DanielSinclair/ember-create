@@ -92,7 +92,9 @@ export async function testFlightPreflight(release) {
   else {
     try {
       const plist = await command('security', ['cms', '-D', '-i', profile]);
-      const value = JSON.parse(await command('plutil', ['-convert', 'json', '-o', '-', '-'], { input: plist }));
+      // Provisioning plists contain dates and certificate bytes, which plutil
+      // cannot convert to JSON. Read only the fields needed for validation.
+      const value = JSON.parse(await command('python3', ['-c', 'import sys,plistlib,json; p=plistlib.loads(sys.stdin.buffer.read()); print(json.dumps({k:p[k] for k in ("Entitlements","ProvisionedDevices","ProvisionsAllDevices","ExpirationDate") if k in p}, default=lambda v:v.isoformat()+"Z"))'], { input: plist }));
       const identifier = value.Entitlements?.['application-identifier'];
       if (!identifier?.endsWith(`.${release.bundleId}`) || value.Entitlements?.['get-task-allow'] || value.ProvisionedDevices || value.ProvisionsAllDevices || new Date(value.ExpirationDate) <= new Date()) {
         blockers.push(`EXACT_PROFILE must be an unexpired App Store distribution profile for ${release.bundleId}.`);

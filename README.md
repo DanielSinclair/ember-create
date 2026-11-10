@@ -2,15 +2,11 @@
 
 Describe an iOS app. Muse Ember generates it; Exact runs it in one reusable simulator container. The TUI is built with Exact too.
 
-The npm package is not published yet. Run the source preview:
+Run with Bun:
 
 ```sh
-git clone https://github.com/DanielSinclair/ember-create.git
-cd ember-create
-sh tools/setup.sh
-export PATH="$HOME/.local/bin:$PATH"
 export OPENROUTER_API_KEY=your-key
-bunx --no-install exact-create
+bunx exact-create
 ```
 
 Requires macOS, Xcode with an iOS simulator, Bun 1.4.2, and Rust 1.97.0. Initial builds take several minutes; compatible edits then reload without rebuilding the native app.
