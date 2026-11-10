@@ -21,7 +21,7 @@ copyFileSync(new URL('./app.ts', import.meta.url), join(fixture, 'app.ts'));
 copyFileSync(new URL('../../src/runtime/muse.ts', import.meta.url), join(fixture, 'muse.ts'));
 const { answer } = await import(join(fixture, 'app.ts'));
 const textReply = (value: unknown) => ({ choices: [{ message: { content: JSON.stringify(value) } }] });
-const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR5mP8/x8AAusB9Wl6cS8AAAAASUVORK5CYII=';
+const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6cS8AAAAASUVORK5CYII=';
 const imageReply = (base64: string) => ({ data: [{ b64_json: base64 }] });
 const storage = { fs: {
   readFile: async (path: string) => {
@@ -29,6 +29,14 @@ const storage = { fs: {
     return files.get(path)!;
   },
   atomicWriteFile: async (path: string, bytes: Uint8Array) => { files.set(path, bytes); },
+  compressImage: async (from: string, to: string, options: unknown) => {
+    expect(options).toEqual({ maxDimension: 1024, maxBytes: 700_000, type: 'image/png' });
+    expect(Buffer.from(files.get(from)!)).toEqual(Buffer.from(png, 'base64'));
+    // This one-pixel PNG already fits the native compressor's bounds.
+    files.set(to, files.get(from)!);
+    return { path: to, type: 'image/png', size: files.get(to)!.length, width: 1, height: 1 };
+  },
+  rm: async (path: string) => { files.delete(path); },
 } };
 const call = (name: string, args: string[] = []) => answer(name as never, args as never, {} as never, storage as never, {} as never);
 beforeEach(() => { files = new Map(); requests = []; response = {}; });
@@ -51,8 +59,11 @@ test('adding a cover persists the book, prevents another paid duplicate, and can
   expect(await call('loadBooks')).toEqual([]);
   const args = ['The Little Prince', 'Antoine de Saint-Exupéry', 'A visitor from a tiny planet.', 'Stars and a small planet'];
   expect(await call('addBook', args)).toEqual({ ok: true, error: '' });
-  const books = await call('loadBooks') as Array<{ id: string; title: string }>;
+  const books = await call('loadBooks') as Array<{ id: string; title: string; cover: string }>;
   expect(books[0].title).toBe('The Little Prince');
+  expect(books[0].cover).toMatch(/^app:\/data\/reading-cover-[a-z0-9-]+\.png$/);
+  expect(files.get(books[0].cover)).toEqual(new Uint8Array(Buffer.from(png, 'base64')));
+  expect([...files.keys()].some(path => path.endsWith('.source'))).toBe(false);
   expect(await call('addBook', args)).toMatchObject({ ok: false });
   expect(requests).toHaveLength(1);
   expect(await call('removeBook', [books[0].id])).toEqual({ ok: true, error: '' });

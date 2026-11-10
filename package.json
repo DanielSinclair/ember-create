@@ -42,7 +42,7 @@
   ],
   "scripts": {
     "start": "bun src/cli.ts",
-    "test": "bun test ./tests",
+    "test": "bun test ./tests ./demos/reading/source.test.ts",
     "serve": "bun src/cli.ts serve",
     "tui": "sh tui/run.sh"
   },
