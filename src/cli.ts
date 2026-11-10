@@ -11,6 +11,7 @@ const json = argv.includes('--json');
 let runLog: string | undefined;
 let totalCost = 0;
 let hasReportedCost = false;
+let generationStarted: number | undefined;
 function option(name: string): string | undefined {
   const at = argv.indexOf(name);
   if (at < 0) return;
@@ -25,6 +26,7 @@ function emit(event: Event) {
     hasReportedCost = true;
   }
   console.log(json ? JSON.stringify(event) : event.message);
+  if (!json && typeof event.elapsedMs === 'number') console.log(`Generation time: ${(event.elapsedMs / 1000).toFixed(1)}s`);
   if (!json && typeof event.totalCostUsd === 'number') console.log(`OpenRouter cost: $${event.totalCostUsd.toFixed(6)} USD (including naming and repairs)`);
 }
 function diagnosticText(raw: string): string {
@@ -60,7 +62,7 @@ async function generate() {
   const provider = option('--provider') || (process.env.OPENROUTER_API_KEY ? 'openrouter' : 'codex');
   const image = option('--image') ? resolve(option('--image')!) : undefined;
   if (image) await readFile(image); // Fail before starting a paid/model call.
-  const started = performance.now();
+  const started = generationStarted = performance.now();
   let metadata: Metadata | undefined;
   if (!manualId && !argv.includes('--fixture') && process.env.OPENROUTER_API_KEY) {
     emit({ type: 'status', message: 'Muse Ember is naming your app' });
@@ -125,6 +127,6 @@ try {
     default: emit({ type: 'help', message: 'Exact Create\n  generate "Describe an app" [--id id] [--image path] [--provider codex|openrouter] [--model model]\n  list\n  select <id>\n  serve [--port 8791]\n  ios [--sim simulator-id]\n\nAdd --json for JSONL events. --fixture generates a deterministic test counter. --no-select validates and saves without changing the container.' });
   }
 } catch (error: any) {
-  emit({ type: 'error', message: error.message || String(error), ...(hasReportedCost ? { totalCostUsd: totalCost } : {}) });
+  emit({ type: 'error', message: error.message || String(error), ...(generationStarted !== undefined ? { elapsedMs: Math.round(performance.now() - generationStarted) } : {}), ...(hasReportedCost ? { totalCostUsd: totalCost } : {}) });
   process.exitCode = 1;
 }

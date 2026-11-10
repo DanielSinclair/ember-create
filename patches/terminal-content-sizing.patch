@@ -1,0 +1,74 @@
+diff --git a/contract/cli/src/terminal.rs b/contract/cli/src/terminal.rs
+index 7ad74b1..d91d0cb 100644
+--- a/contract/cli/src/terminal.rs
++++ b/contract/cli/src/terminal.rs
+@@ -52,6 +52,11 @@ fn column() -> &'static HashMap<String, Admission> {
+ 
+ /// How a terminal entry admits a row; `None` is refused.
+ pub fn admission(row: StyleId) -> Option<Admission> {
++    // The kernel already measures live field content in terminal cells. Keep
++    // this compiler-only admission from rotating the shared plan schema digest.
++    if row == StyleId::FieldSizing {
++        return Some(Admission::Admit);
++    }
+     column().get(row.name()).copied()
+ }
+ 
+diff --git a/host/terminal/tests/it/cli.rs b/host/terminal/tests/it/cli.rs
+index 7690944..4937fa7 100644
+--- a/host/terminal/tests/it/cli.rs
++++ b/host/terminal/tests/it/cli.rs
+@@ -4,6 +4,53 @@
+ use std::path::PathBuf;
+ use std::process::Command;
+ 
++#[test]
++fn content_sized_textarea_wraps_on_edit_and_resize_and_keeps_the_caret_line() {
++    use exact_terminal::host::{Host, Mode};
++    let plan = contract::compile_terminal(
++        r#"component App
++  state draft = ""
++  action edit(value: string)
++    draft = value
++  action clear
++    draft = ""
++  view
++    column width="100%"
++      textarea value=draft input=edit rows=1 field-sizing="content" width="100%" min-width=0 min-height="1lh" max-height="4lh" white-space="pre-wrap" overflow-wrap="anywhere" appearance="none" testId="draft"
++"#,
++    )
++    .unwrap();
++    let mut host = Host::boot(plan, (), Mode::Fullscreen, 20, 12).unwrap();
++    let mut terminal = exact_terminal::vt::Vt::new(&mut host);
++    terminal.render(&mut host);
++    host.read_at = host.frames;
++    let id = host.by_test_id("draft").unwrap();
++    host.focus(Some(id));
++    let rows = |host: &Host<()>| host.kernel().node(id).unwrap().frame.height / 16.;
++    assert_eq!(rows(&host), 1.);
++    host.paste("abcdefghijklmnopqrstu");
++    assert_eq!(rows(&host), 2., "an unbroken word wraps while typing");
++    host.resize(10, 12);
++    assert_eq!(
++        rows(&host),
++        3.,
++        "the actual terminal width controls wrapping"
++    );
++    host.resize(30, 12);
++    assert_eq!(rows(&host), 1., "widening shrinks the field again");
++    host.paste("\n");
++    assert_eq!(rows(&host), 2., "a final Return owns a caret line");
++    host.paste("two\nthree\nfour\nfive\nsix");
++    assert_eq!(rows(&host), 4., "growth stops at the authored maximum");
++    assert_eq!(
++        host.frame().grid.cursor.unwrap().1,
++        3,
++        "the caret stays visible at the cap"
++    );
++    host.act("clear");
++    assert_eq!(rows(&host), 1., "clearing shrinks back to one row");
++}
++
+ #[cfg(unix)]
+ #[test]
+ fn termination_signals_restore_the_terminal() {

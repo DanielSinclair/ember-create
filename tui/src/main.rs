@@ -38,7 +38,7 @@ impl Bridge {
         Self {
             state: Arc::new(Mutex::new(State {
                 status: "Ready".into(),
-                tone: "muted".into(),
+                tone: "ready".into(),
                 ..State::default()
             })),
             native: Native::default(),
@@ -325,6 +325,16 @@ fn read_lines<R: std::io::Read>(reader: R, state: &Arc<Mutex<State>>, native: &N
             })
             .unwrap_or("muted");
         s.entries.push((clean(&shown), tone.into()));
+        if let Some(ms) = event
+            .as_ref()
+            .and_then(|e| e["elapsedMs"].as_f64())
+            .filter(|ms| ms.is_finite() && *ms >= 0.0)
+        {
+            s.entries.push((
+                format!("Generation time: {:.1}s", ms / 1000.0),
+                "muted".into(),
+            ));
+        }
         if let Some(cost) = event
             .as_ref()
             .and_then(|e| e["totalCostUsd"].as_f64())
@@ -393,6 +403,11 @@ impl DataSource for Bridge {
             "submit" => self.submit(&text(0)),
             "showBuilds" => self.builds(),
             "installProject" => self.install(&text(0)),
+            "clearAttachment" => {
+                self.state.lock().unwrap().attachment.clear();
+                self.native.changed("session");
+                true
+            }
             "closePicker" => {
                 self.state.lock().unwrap().picker = false;
                 self.native.changed("session");
@@ -448,10 +463,14 @@ mod tests {
             "Thinking · writing your contract"
         );
         let error =
-            "{\"type\":\"error\",\"message\":\"Validation failed\",\"totalCostUsd\":0.0037359}\n";
+            "{\"type\":\"error\",\"message\":\"Validation failed\",\"totalCostUsd\":0.0037359,\"elapsedMs\":11967}\n";
         read_lines(error.as_bytes(), &bridge.state, &bridge.native);
         let state = bridge.state.lock().unwrap();
         assert_eq!(state.tone, "error");
+        assert!(state
+            .entries
+            .iter()
+            .any(|(text, _)| text == "Generation time: 12.0s"));
         assert_eq!(
             state.entries.last().unwrap().0,
             "OpenRouter cost: $0.003736 USD (including naming and repairs)"

@@ -23,7 +23,7 @@ shape Inspection
   attached: bool
   input: string
 
-fn toneColor(tone: string): string = tone == "error" ? "#fb7185" : tone == "warning" ? "#fbbf24" : (tone == "success" or tone == "cost") ? "#86efac" : tone == "thinking" ? "#c4b5fd" : tone == "working" ? "#67e8f9" : tone == "prompt" ? "#eeeeee" : "#999999"
+fn toneColor(tone: string): string = tone == "error" ? "#fb7185" : tone == "warning" ? "#fbbf24" : (tone == "success" or tone == "cost" or tone == "ready") ? "#86efac" : tone == "thinking" ? "#c4b5fd" : tone == "working" ? "#67e8f9" : tone == "prompt" ? "#eeeeee" : "#999999"
 
 component Creator
   resource session = session() as shape Session
@@ -32,6 +32,7 @@ component Creator
   state draft = ""
   state tick = 0
   state choice = 0
+  state editing = false
   derive dots = tick % 4 == 0 ? "   " : tick % 4 == 1 ? ".  " : tick % 4 == 2 ? ".. " : "..."
   derive thinking = session.status.startsWith("Thinking")
   task spin when session.busy
@@ -51,7 +52,7 @@ component Creator
   action submit
     if draft.trim() != "" and not session.busy
       tick = 0
-      send requested = submit(draft.trim())
+      send requested = submit(editing ? `/edit ${draft.trim()}` : draft.trim())
       draft = ""
   action launch
     if not session.busy
@@ -69,7 +70,13 @@ component Creator
   action hideBuilds
     send requested = closePicker()
   action onKey(key: string, e: KeyboardEvent)
-    if key == "b" and e.ctrlKey
+    if key == "e" and e.ctrlKey
+      editing = not editing
+      preventDefault()
+    else if key == "Escape" and not session.picker and session.attachment != ""
+      send requested = clearAttachment()
+      preventDefault()
+    else if key == "b" and e.ctrlKey
       builds()
       preventDefault()
     else if session.picker and key == "Escape"
@@ -98,14 +105,12 @@ component Creator
 
   view
     column height="100%" box-sizing="border-box" background-color="#000000" color="#eeeeee" padding="1lh 2ch"
-      row gap="2ch" padding-bottom="1lh"
-        text "Muse Ember" color="#888888" margin-left="auto"
       scroll flex=1 min-height=0 scrollFollowEnd=true testId="transcript-scroll"
         if session.entries.length == 0
           column gap="1lh" padding-top="2lh"
             text "What do you want to build?" font-weight=700 testId="welcome"
-            text "Describe an iOS app. Muse Ember will name it and write its contract." color="#999999"
-            text "Drop an image into the composer to attach a reference." color="#777777"
+            text "Describe an iOS app. Muse Ember will build it." color="#999999"
+            text "Drop an image to use it as a reference." color="#777777"
         else
           column gap="1lh" role="log" testId="transcript"
             for entry, i in session.entries key=i
@@ -124,13 +129,27 @@ component Creator
                       text `${project.name}${project.demo ? " [Demo]" : ""}`
             text "↑ ↓ choose · enter install and open · esc close" color="#888888"
         row gap="1ch"
-          text (session.busy ? "›" : session.tone == "success" ? "✓" : session.tone == "error" ? "!" : "·") color=toneColor(session.tone)
+          text (session.busy ? "›" : session.tone == "success" ? "✓" : session.tone == "error" ? "!" : "●") color=toneColor(session.tone)
           text (session.busy ? `${session.status}${dots}` : session.status) color=(session.busy and thinking and session.tone == "thinking" and tick % 4 < 2 ? "#a78bfa" : toneColor(session.tone)) white-space="pre-wrap" testId="status"
           if session.busy
             text `${floor(tick / 4)}s` color="#777777"
         if session.attachment != ""
-          text `image · ${session.attachment}` color="#67e8f9" testId="attachment"
-        row border="thin solid #555555" padding="0 1ch" gap="1ch"
-          text ">" font-weight=700
-          textarea value=draft appearance="none" input=write key=onKey autofocus=true placeholder=(session.busy ? "Working… you can draft your next prompt" : "Build an app…") flex=1 min-width=0 rows=min(4, draft.split("\n").length) testId="prompt"
-        text "enter send   ctrl+b builds   ctrl+o simulator   /edit   /image" color="#777777"
+          text `Image · ${session.attachment}  ·  esc remove` color="#67e8f9" testId="attachment"
+        row border="thin solid #444444" padding="0 1ch" gap="1ch" align-items="start"
+          text (editing ? "~" : ">") color="#c4b5fd" font-weight=700
+          textarea value=draft appearance="none" input=write key=onKey autofocus=true placeholder=(session.busy ? "Working… you can draft your next prompt" : editing ? "Describe changes to the selected app…" : "Build an app…") flex=1 min-width=0 rows=1 field-sizing="content" min-height="1lh" max-height="6lh" white-space="pre-wrap" overflow-wrap="anywhere" testId="prompt"
+        column gap=0
+          row flex-wrap="wrap" gap="1ch 2ch" testId="shortcuts"
+            row gap="1ch"
+              text "enter" color="#dddddd" background-color="#202020" padding="0 1ch"
+              text "send" color="#888888"
+            row gap="1ch"
+              text "ctrl+b" color="#aaaaaa"
+              text "builds" color="#777777"
+            row gap="1ch"
+              text "ctrl+o" color="#aaaaaa"
+              text "simulator" color="#777777"
+            row gap="1ch"
+              text "ctrl+e" color="#aaaaaa"
+              text (editing ? "new app" : "edit app") color="#777777"
+          text "shift+enter newline · drop image to attach" color="#666666"

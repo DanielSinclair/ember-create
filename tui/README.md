@@ -4,9 +4,11 @@ A black-background, fullscreen Exact Contract interface with a scrollable transc
 and one bottom composer. A Rust data adapter runs the shared Bun CLI and streams
 its JSONL status messages into the screen. Thinking text animates with cycling dots
 and a subtle violet pulse. Cyan marks validation/building, amber marks repairs,
-green marks success and reported OpenRouter cost, and red marks failures. Labels
+green marks Ready, success and reported OpenRouter cost, and red marks failures. Labels
 remain readable without color. Generation cost includes naming and repairs and
-is shown after success or failure when OpenRouter reports usage.
+is shown after success or failure when OpenRouter reports usage. Total generation
+time remains in the transcript. The composer wraps and grows up to six lines,
+then scrolls while keeping the caret visible.
 
 ```sh
 sh tui/run.sh
@@ -21,15 +23,11 @@ description. Quoted or shell-escaped paths and local `file://` URLs are recogniz
 without running a shell. The original text stays intact when it is not a readable
 PNG, JPEG, or WebP path.
 
+- **Enter** sends; **Shift+Enter** inserts a newline.
 - **Ctrl+O** launches the iOS simulator.
-- **Ctrl+B**, **`/builds`**, or **`/apps`** opens the build picker. Use Up/Down
-  and Enter, or click a build, to install and open it. Demo builds show **[Demo]**.
-- **`/open ID`** installs and opens a project directly.
-- **`/edit description`** revises the selected app.
-- **`/image /path/to/image.png`** attaches an image to generation requests;
-  **`/image clear`** removes it. Quoted file paths are accepted.
-- **`/new description`** explicitly creates an app; ordinary prompts do the same.
-- **`/help`** prints the commands.
+- **Ctrl+B** opens builds; arrows and Enter install and open a selection.
+- **Ctrl+E** switches between creating a new app and editing the selected app.
+- Drop an image to attach it; **Esc** removes it or closes the build picker.
 
 The launcher requires Bun 1.4.2 and Rust 1.97.0. Set `BUN` to override Bun's path.
 Its first Rust build takes several minutes; subsequent launches reuse the binary.

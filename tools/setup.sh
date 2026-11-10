@@ -33,7 +33,9 @@ checkout_dependency() {
 }
 
 checkout_dependency exact https://github.com/expo/exact.git 94b8671f70fe2e25b307a40e7fce66dc27c9f802
-checkout_dependency exact-templates https://github.com/expo/exact-templates.git ece65894bb53305f2d572c17c780f1f770350b95
+if [ "${EXACT_CREATE_RUNTIME_ONLY:-}" != "1" ]; then
+  checkout_dependency exact-templates https://github.com/expo/exact-templates.git ece65894bb53305f2d572c17c780f1f770350b95
+fi
 for patch_file in "$project_root"/patches/*.patch; do
   [ -f "$patch_file" ] || continue
   if git -C "$project_root/exact" apply --check "$patch_file" 2>/dev/null; then
@@ -59,6 +61,11 @@ for source_file in app.contract app.ts app.test.contract; do
     cp "$project_root/demos/pedometer/$source_file" "$project_root/container/$source_file"
   fi
 done
+
+if [ "${EXACT_CREATE_NO_LINK:-}" = "1" ]; then
+  echo "Runtime setup complete."
+  exit 0
+fi
 
 command_dir=${EXACT_CREATE_BIN_DIR:-"$HOME/.local/bin"}
 mkdir -p "$command_dir"

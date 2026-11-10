@@ -7,6 +7,12 @@ while [ -L "$launcher" ]; do
   case "$launcher" in /*) ;; *) launcher="$directory/$launcher" ;; esac
 done
 ROOT=$(CDPATH= cd -- "$(dirname -- "$launcher")/.." && pwd)
+if [ ! -e "$ROOT/.git" ] && [ "${EXACT_CREATE_BOOTSTRAPPED:-}" != "1" ]; then
+  if [ -n "${BUN:-}" ]; then exec "$BUN" "$ROOT/tools/bootstrap.mjs" "$@"; fi
+  if [ -x "$HOME/.bun-1.4.2/bin/bun" ]; then exec "$HOME/.bun-1.4.2/bin/bun" "$ROOT/tools/bootstrap.mjs" "$@"; fi
+  exec bun "$ROOT/tools/bootstrap.mjs" "$@"
+fi
+if [ "${1:-}" = "setup" ]; then exec sh "$ROOT/tools/setup.sh"; fi
 if [ "$#" -eq 0 ]; then exec sh "$ROOT/tui/run.sh"; fi
 if [ -f "$ROOT/.env" ]; then
   set -- --env-file "$ROOT/.env" "$ROOT/src/cli.ts" "$@"
