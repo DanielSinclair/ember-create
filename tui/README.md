@@ -1,8 +1,12 @@
 # Exact Create terminal UI
 
-A monochrome, fullscreen Exact Contract interface with a scrollable transcript
+A black-background, fullscreen Exact Contract interface with a scrollable transcript
 and one bottom composer. A Rust data adapter runs the shared Bun CLI and streams
-its JSONL status messages into the screen.
+its JSONL status messages into the screen. Thinking text animates with cycling dots
+and a subtle violet pulse. Cyan marks validation/building, amber marks repairs,
+green marks success and reported OpenRouter cost, and red marks failures. Labels
+remain readable without color. Generation cost includes naming and repairs and
+is shown after success or failure when OpenRouter reports usage.
 
 ```sh
 sh tui/run.sh

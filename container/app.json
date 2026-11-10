@@ -5,6 +5,14 @@
   "id": "com.exactcreate.demo",
   "start_url": "/",
   "display": "standalone",
+  "icons": [
+    {
+      "src": "assets/app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
   "app": {
     "id": "com.exactcreate.demo",
     "name": "Exact Create"

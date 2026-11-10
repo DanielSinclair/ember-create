@@ -10,6 +10,7 @@ const argv = process.argv.slice(2);
 const json = argv.includes('--json');
 let runLog: string | undefined;
 let totalCost = 0;
+let hasReportedCost = false;
 function option(name: string): string | undefined {
   const at = argv.indexOf(name);
   if (at < 0) return;
@@ -19,8 +20,12 @@ function option(name: string): string | undefined {
 function emit(event: Event) {
   if (runLog) appendFileSync(runLog, JSON.stringify({ at: new Date().toISOString(), ...event }) + '\n');
   const usage = event.usage as { cost?: number } | undefined;
-  if (typeof usage?.cost === 'number') totalCost += usage.cost;
+  if (typeof usage?.cost === 'number' && Number.isFinite(usage.cost) && usage.cost >= 0) {
+    totalCost += usage.cost;
+    hasReportedCost = true;
+  }
   console.log(json ? JSON.stringify(event) : event.message);
+  if (!json && typeof event.totalCostUsd === 'number') console.log(`OpenRouter cost: $${event.totalCostUsd.toFixed(6)} USD (including naming and repairs)`);
 }
 function diagnosticText(raw: string): string {
   try {
@@ -86,7 +91,7 @@ async function generate() {
   const project: Project = { ...artifact, name: metadata?.name || artifact.name, description: metadata?.description || previous?.description, demo: previous?.demo, id, prompt: request, provider: argv.includes('--fixture') ? 'fixture' : provider, createdAt: previous?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
   await saveProject(project);
   if (!argv.includes('--no-select')) await activate(project);
-  emit({ type: 'result', message: `Generated ${project.name}`, id, name: project.name, description: project.description, directory: join(DATA, 'projects', id), elapsedMs: Math.round(performance.now() - started), selected: !argv.includes('--no-select'), runLog, ...(provider === 'openrouter' || totalCost > 0 ? { totalCostUsd: totalCost } : {}) });
+  emit({ type: 'result', message: `Generated ${project.name}`, id, name: project.name, description: project.description, directory: join(DATA, 'projects', id), elapsedMs: Math.round(performance.now() - started), selected: !argv.includes('--no-select'), runLog, ...(hasReportedCost ? { totalCostUsd: totalCost } : {}) });
 }
 
 try {
@@ -120,6 +125,6 @@ try {
     default: emit({ type: 'help', message: 'Exact Create\n  generate "Describe an app" [--id id] [--image path] [--provider codex|openrouter] [--model model]\n  list\n  select <id>\n  serve [--port 8791]\n  ios [--sim simulator-id]\n\nAdd --json for JSONL events. --fixture generates a deterministic test counter. --no-select validates and saves without changing the container.' });
   }
 } catch (error: any) {
-  emit({ type: 'error', message: error.message || String(error) });
+  emit({ type: 'error', message: error.message || String(error), ...(hasReportedCost ? { totalCostUsd: totalCost } : {}) });
   process.exitCode = 1;
 }

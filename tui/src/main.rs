@@ -15,7 +15,8 @@ use shapes::ContractValue;
 struct State {
     busy: bool,
     status: String,
-    output: String,
+    entries: Vec<(String, String)>,
+    tone: String,
     attachment: String,
     picker: bool,
     projects: Vec<(String, String, bool)>,
@@ -37,6 +38,7 @@ impl Bridge {
         Self {
             state: Arc::new(Mutex::new(State {
                 status: "Ready".into(),
+                tone: "muted".into(),
                 ..State::default()
             })),
             native: Native::default(),
@@ -50,7 +52,8 @@ impl Bridge {
                 return false;
             }
             state.busy = true;
-            state.status = "Working…".into();
+            state.status = "Starting".into();
+            state.tone = "working".into();
         }
         self.native.changed("session");
         let state = self.state.clone();
@@ -81,6 +84,12 @@ impl Bridge {
             })();
             let mut s = state.lock().unwrap();
             s.busy = false;
+            s.tone = if matches!(&result, Ok(true)) {
+                "success"
+            } else {
+                "error"
+            }
+            .into();
             s.status = match result {
                 Ok(true) => "Done".into(),
                 Ok(false) => "Failed — see output".into(),
@@ -94,7 +103,15 @@ impl Bridge {
 
     fn note(&self, message: &str) {
         let mut s = self.state.lock().unwrap();
-        s.output.push_str(&format!("{}\n\n", clean(message)));
+        s.entries.push((
+            clean(message),
+            if message.starts_with('>') {
+                "prompt"
+            } else {
+                "muted"
+            }
+            .into(),
+        ));
         drop(s);
         self.native.changed("session");
     }
@@ -216,16 +233,43 @@ impl Bridge {
     }
 }
 
+fn event_status<'a>(kind: &str, message: &'a str) -> (Option<&'a str>, &'static str) {
+    match kind {
+        "error" => (Some("Failed — see output"), "error"),
+        "diagnostics" => (Some("Checking issues"), "warning"),
+        "result" | "selected" => (Some("Finishing"), "success"),
+        "status" if message.contains("naming") => (Some("Thinking · naming your app"), "thinking"),
+        "status" if message.starts_with("Generating") => {
+            (Some("Thinking · writing your contract"), "thinking")
+        }
+        "status" if message.starts_with("Repairing") => {
+            (Some("Thinking · repairing your contract"), "warning")
+        }
+        "status" if message.starts_with("Checking") => {
+            (Some("Validating Contract and TypeScript"), "working")
+        }
+        "status" if message.starts_with("Validating") => (Some("Staging app update"), "working"),
+        "status" if message.starts_with("Building") => {
+            (Some("Building and launching iOS"), "working")
+        }
+        "status" => (Some(message), "working"),
+        "metadata" => (Some("Preparing generation"), "prompt"),
+        "usage" => (None, "muted"),
+        _ => (None, "muted"),
+    }
+}
+
 fn read_lines<R: std::io::Read>(reader: R, state: &Arc<Mutex<State>>, native: &Native) {
     for line in BufReader::new(reader).lines().map_while(Result::ok) {
         let mut s = state.lock().unwrap();
         let event = serde_json::from_str::<serde_json::Value>(&line).ok();
-        if let Some(message) = event
-            .as_ref()
-            .and_then(|v| v.get("message"))
-            .and_then(|v| v.as_str())
-        {
-            s.status = clean(message).chars().take(90).collect();
+        if let Some(event) = &event {
+            let message = event["message"].as_str().unwrap_or("");
+            let (label, tone) = event_status(event["type"].as_str().unwrap_or(""), message);
+            if let Some(label) = label {
+                s.status = label.into();
+                s.tone = tone.into();
+            }
         }
         let shown = if let Some(projects) = event
             .as_ref()
@@ -270,16 +314,31 @@ fn read_lines<R: std::io::Read>(reader: R, state: &Arc<Mutex<State>>, native: &N
                 .unwrap_or(&line)
                 .to_string()
         };
-        s.output.push_str(&clean(&shown));
-        s.output.push('\n');
-        if s.output.len() > 16000 {
-            let end = s
-                .output
-                .char_indices()
-                .find(|(i, _)| *i >= s.output.len() - 12000)
-                .map(|(i, _)| i)
-                .unwrap_or(0);
-            s.output.drain(..end);
+        let tone = event
+            .as_ref()
+            .map(|e| {
+                event_status(
+                    e["type"].as_str().unwrap_or(""),
+                    e["message"].as_str().unwrap_or(""),
+                )
+                .1
+            })
+            .unwrap_or("muted");
+        s.entries.push((clean(&shown), tone.into()));
+        if let Some(cost) = event
+            .as_ref()
+            .and_then(|e| e["totalCostUsd"].as_f64())
+            .filter(|cost| cost.is_finite() && *cost >= 0.0)
+        {
+            s.entries.push((
+                format!("OpenRouter cost: ${cost:.6} USD (including naming and repairs)"),
+                "cost".into(),
+            ));
+        }
+        while s.entries.len() > 1
+            && s.entries.iter().map(|(text, _)| text.len()).sum::<usize>() > 16000
+        {
+            s.entries.remove(0);
         }
         drop(s);
         native.changed("session");
@@ -293,7 +352,15 @@ impl DataSource for Bridge {
             return Ok(shapes::Session {
                 busy: s.busy,
                 status: s.status.clone(),
-                output: s.output.clone(),
+                entries: s
+                    .entries
+                    .iter()
+                    .map(|(text, tone)| shapes::LogEntry {
+                        text: text.clone(),
+                        tone: tone.clone(),
+                    })
+                    .collect(),
+                tone: s.tone.clone(),
                 attachment: s.attachment.clone(),
                 picker: s.picker,
                 projects: s
@@ -362,4 +429,40 @@ fn main() -> std::process::ExitCode {
         include_bytes!(concat!(env!("OUT_DIR"), "/terminal.plan")),
         exact_terminal::host::Mode::Fullscreen,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn progress_and_cost_survive_usage_events_and_failures() {
+        let bridge = Bridge::new();
+        let events = concat!(
+            "{\"type\":\"status\",\"message\":\"Generating demo with Muse Ember (1/3)\"}\n",
+            "{\"type\":\"usage\",\"message\":\"Muse Ember generation complete\"}\n"
+        );
+        read_lines(events.as_bytes(), &bridge.state, &bridge.native);
+        assert_eq!(
+            bridge.state.lock().unwrap().status,
+            "Thinking · writing your contract"
+        );
+        let error =
+            "{\"type\":\"error\",\"message\":\"Validation failed\",\"totalCostUsd\":0.0037359}\n";
+        read_lines(error.as_bytes(), &bridge.state, &bridge.native);
+        let state = bridge.state.lock().unwrap();
+        assert_eq!(state.tone, "error");
+        assert_eq!(
+            state.entries.last().unwrap().0,
+            "OpenRouter cost: $0.003736 USD (including naming and repairs)"
+        );
+        assert_eq!(
+            event_status("status", "Repairing demo (2/3)"),
+            (Some("Thinking · repairing your contract"), "warning")
+        );
+        assert_eq!(
+            event_status("status", "Checking the generated Contract and TypeScript").1,
+            "working"
+        );
+    }
 }

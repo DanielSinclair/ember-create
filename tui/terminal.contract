@@ -3,10 +3,15 @@ shape ProjectChoice
   name: string
   demo: bool
 
+shape LogEntry
+  text: string
+  tone: string
+
 shape Session
   busy: bool
   status: string
-  output: string
+  entries: LogEntry[]
+  tone: string
   attachment: string
   picker: bool
   projects: ProjectChoice[]
@@ -18,6 +23,8 @@ shape Inspection
   attached: bool
   input: string
 
+fn toneColor(tone: string): string = tone == "error" ? "#fb7185" : tone == "warning" ? "#fbbf24" : (tone == "success" or tone == "cost") ? "#86efac" : tone == "thinking" ? "#c4b5fd" : tone == "working" ? "#67e8f9" : tone == "prompt" ? "#eeeeee" : "#999999"
+
 component Creator
   resource session = session() as shape Session
   mutation requested as shape Ack
@@ -25,6 +32,8 @@ component Creator
   state draft = ""
   state tick = 0
   state choice = 0
+  derive dots = tick % 4 == 0 ? "   " : tick % 4 == 1 ? ".  " : tick % 4 == 2 ? ".. " : "..."
+  derive thinking = session.status.startsWith("Thinking")
   task spin when session.busy
     every(250, step)
   action step
@@ -41,17 +50,21 @@ component Creator
         draft = draft
   action submit
     if draft.trim() != "" and not session.busy
+      tick = 0
       send requested = submit(draft.trim())
       draft = ""
   action launch
     if not session.busy
+      tick = 0
       send requested = launchSimulator()
   action builds
     if not session.busy
       choice = 0
+      tick = 0
       send requested = showBuilds()
   action choose(id: string)
     if not session.busy
+      tick = 0
       send requested = installProject(id)
   action hideBuilds
     send requested = closePicker()
@@ -88,13 +101,15 @@ component Creator
       row gap="2ch" padding-bottom="1lh"
         text "Muse Ember" color="#888888" margin-left="auto"
       scroll flex=1 min-height=0 scrollFollowEnd=true testId="transcript-scroll"
-        if session.output == ""
+        if session.entries.length == 0
           column gap="1lh" padding-top="2lh"
             text "What do you want to build?" font-weight=700 testId="welcome"
             text "Describe an iOS app. Muse Ember will name it and write its contract." color="#999999"
             text "Drop an image into the composer to attach a reference." color="#777777"
         else
-          text session.output white-space="pre-wrap" role="log" testId="transcript"
+          column gap="1lh" role="log" testId="transcript"
+            for entry, i in session.entries key=i
+              text entry.text color=toneColor(entry.tone) white-space="pre-wrap"
       column flex-shrink=0 gap="1lh" padding-top="1lh"
         if session.picker
           column border="thin solid #555555" padding="1lh 1ch" gap="1lh" testId="build-picker"
@@ -109,10 +124,12 @@ component Creator
                       text `${project.name}${project.demo ? " [Demo]" : ""}`
             text "↑ ↓ choose · enter install and open · esc close" color="#888888"
         row gap="1ch"
-          text (session.busy ? (tick % 2 == 0 ? "●" : "○") : "·") color="#cccccc"
-          text session.status color="#999999" testId="status"
+          text (session.busy ? "›" : session.tone == "success" ? "✓" : session.tone == "error" ? "!" : "·") color=toneColor(session.tone)
+          text (session.busy ? `${session.status}${dots}` : session.status) color=(session.busy and thinking and session.tone == "thinking" and tick % 4 < 2 ? "#a78bfa" : toneColor(session.tone)) white-space="pre-wrap" testId="status"
+          if session.busy
+            text `${floor(tick / 4)}s` color="#777777"
         if session.attachment != ""
-          text `image · ${session.attachment}` color="#aaaaaa" testId="attachment"
+          text `image · ${session.attachment}` color="#67e8f9" testId="attachment"
         row border="thin solid #555555" padding="0 1ch" gap="1ch"
           text ">" font-weight=700
           textarea value=draft appearance="none" input=write key=onKey autofocus=true placeholder=(session.busy ? "Working… you can draft your next prompt" : "Build an app…") flex=1 min-width=0 rows=min(4, draft.split("\n").length) testId="prompt"
