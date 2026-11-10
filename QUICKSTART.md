@@ -80,6 +80,26 @@ Generation selects the result automatically. Add `--no-select` to validate and s
 
 Switching projects can restart the installed container to reset transient state. Compatible same-project updates use the running preview stream. Persistent records use project-specific paths; switching does not provide a separate iOS sandbox for each project.
 
+## Prompt for a specific style
+
+Name the visual choices that matter: palette, typography, spacing, focal point, and any layouts to avoid. Two starting prompts:
+
+```text
+Track today's real Apple Health steps toward 10,000. Use a green botanical
+style with an ivory background and a plant that grows with real progress.
+
+A warm editorial focus timer: cream paper, terracotta buttons, large tabular
+time, thin dividers, and no cards or motivational slogans.
+```
+
+For revisions, describe what should change and what should stay. In the TUI:
+
+```text
+/edit Keep the timer behavior; remove the cards and make the countdown the focal point.
+```
+
+Check the resulting app in the simulator. The compiler checks the Contract's validity; it does not judge whether the model followed the requested design.
+
 ## Clone from a screenshot
 
 ```sh

@@ -57,5 +57,9 @@ test('fresh registries receive bundled demos and existing projects are never ove
     expect(await readFile(join(fresh, 'projects', 'water', 'app.contract'), 'utf8')).toBe('my original source');
     await seedDemos(fresh);
     expect(JSON.parse(await readFile(join(fresh, 'projects', 'hydration', 'project.json'), 'utf8')).demo).toBe(true);
+    const focus = JSON.parse(await readFile(join(fresh, 'projects', 'focus', 'project.json'), 'utf8'));
+    expect(focus.demo).toBe(true);
+    expect(focus.contract).toContain('minutes == 5 ?');
+    expect(focus.tests).toContain('restarting after completion');
   } finally { await rm(fresh, { recursive: true, force: true }); }
 });

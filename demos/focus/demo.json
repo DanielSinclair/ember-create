@@ -1,0 +1,9 @@
+{
+  "name": "Editorial Focus Timer",
+  "id": "focus",
+  "prompt": "Build a warm editorial focus timer: cream paper background, dark espresso typography, terracotta primary button, oversized tabular countdown, thin ink dividers, generous gutters. No cards, no motivational slogans, no privacy boilerplate. Start, pause/resume, reset, and 5/15/25-minute presets must work; pausing preserves time and restarting after the countdown finishes starts a full new interval. Give it a distinctive printed-journal feel. Use Contract state only. Include tests for pause/resume, reset, and restarting after completion.",
+  "provider": "openrouter",
+  "createdAt": "2026-11-10T04:11:11.197Z",
+  "updatedAt": "2026-11-10T04:11:11.197Z",
+  "demo": true
+}

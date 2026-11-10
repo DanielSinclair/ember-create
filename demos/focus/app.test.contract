@@ -1,0 +1,33 @@
+test "pause preserves time and resume continues"
+  tap "min-5"
+  tap "start-pause"
+  clock +60000
+  expect text "left" == "4:00"
+  tap "start-pause"
+  clock +60000
+  expect text "left" == "4:00"
+  tap "start-pause"
+  clock +60000
+  expect text "left" == "3:00"
+  expect text "status" == "In session"
+
+test "reset returns to the full interval"
+  tap "min-5"
+  tap "start-pause"
+  clock +120000
+  expect text "left" == "3:00"
+  tap "reset"
+  expect text "left" == "5:00"
+  expect text "status" == "Ready"
+
+test "restarting after completion starts a full new interval"
+  tap "min-5"
+  tap "start-pause"
+  clock +300000
+  expect text "left" == "0:00"
+  expect text "status" == "Finished"
+  tap "start-pause"
+  expect text "left" == "5:00"
+  expect text "status" == "In session"
+  clock +60000
+  expect text "left" == "4:00"

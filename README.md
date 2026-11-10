@@ -39,6 +39,15 @@ The CLI chooses OpenRouter when its key is available, otherwise Codex. Choose ex
 
 Attach a screenshot with `--image /absolute/path/screen.png`. In the TUI, drop an image into the composer or enter `/image /absolute/path/screen.png`, then describe the app. A terminal file drop must insert a path; clipboard image bytes are not supported.
 
+## Give the app a visual direction
+
+Include the behavior and the design in the same prompt. For example:
+
+- “Track today's real Apple Health steps toward 10,000. Use a deep green botanical style, an ivory background, and a plant that visibly grows with progress.”
+- “A warm editorial focus timer with cream paper, terracotta buttons, large tabular time, thin dividers, and no cards or motivational slogans.”
+
+Use `/edit` to refine the selected app, such as `/edit Keep the timer behavior; remove the cards and give the countdown more space.` Review the rendered screen and interactions after generation; style instructions are model inputs, not a guarantee of visual fidelity.
+
 ## Current scope
 
 - Contract UI, TypeScript data logic, local persistence, and generated behavior tests.

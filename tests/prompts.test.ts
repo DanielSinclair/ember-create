@@ -26,7 +26,30 @@ test('a growing plant request requires a visible progress-dependent graphic', as
   expect(prompt).toContain('A stage label, step count, or progress bar alone does not satisfy');
   expect(prompt).toContain('image "symbol:sf/leaf.fill" font-size=leafSize');
   expect(prompt).toContain('height=stemHeight');
+  expect(prompt).toContain('ratio is clamped 0–1');
+  expect(prompt).toContain('leafSize = 36 + ratio * 60');
+  expect(prompt).toContain('36, 66 and 96 points');
   expect(prompt).toContain('never manufacture zero steps or 0% growth');
+});
+
+test('requested aesthetics override starter styling and references do not dictate the screen', async () => {
+  const editorial = 'A warm editorial focus timer with cream paper, terracotta buttons, large tabular time, thin dividers, and no cards or motivational slogans';
+  const prompt = await generationPrompt('paper-focus', editorial);
+  expect(prompt).toContain(editorial);
+  expect(prompt).toContain('Explicit author styling wins over the platform defaults');
+  expect(prompt).toContain('Honor requests such as "no cards"');
+  expect(prompt).toContain('same padded content column');
+  expect(prompt).toContain('choose distinct screen/surface colors');
+  expect(prompt).toContain('matching scroll/list id="name"');
+  expect(prompt).toContain('must omit buttonStyle');
+  expect(prompt).toContain('minimum 44-point hit height');
+  expect(prompt).toContain('Timer behavior reference only');
+  expect(prompt).toContain('Pausing must preserve the remaining duration');
+  expect(prompt).not.toContain('HEALTH DATA REQUIREMENT');
+  const botanical = await generationPrompt('step-garden', request);
+  expect(botanical).toContain('Validated pedometer API reference only');
+  expect(botanical).toContain('not its screen layout, visual styling, headings, or lengthy privacy copy');
+  expect(botanical).toContain('brief secondary sentence');
 });
 
 test('repairs both scalar resources and missing as clauses with a concrete replacement', async () => {

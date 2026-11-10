@@ -10,7 +10,7 @@ export type Project = Artifact & { id: string; description?: string; demo?: bool
 export async function seedDemos(destination = DATA) {
   const projects = join(destination, 'projects');
   await mkdir(projects, { recursive: true });
-  for (const id of ['pedometer', 'water', 'hydration']) {
+  for (const id of ['pedometer', 'water', 'hydration', 'focus']) {
     const source = join(ROOT, 'demos', id);
     const [metadata, contract, typescript, tests] = await Promise.all([
       readFile(join(source, 'demo.json'), 'utf8').then(JSON.parse),
