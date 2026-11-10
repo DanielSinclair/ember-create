@@ -1,0 +1,39 @@
+component SoftLanding
+  state moodChoice = "" persist
+  state moodNote = "" persist
+  state moodSaved = "" persist
+  action choose(value: string)
+    moodChoice = value
+  action write(value: string)
+    moodNote = value
+  action saveNote
+    moodSaved = moodNote.trim()
+  action clear
+    moodNote = ""
+    moodSaved = ""
+    moodChoice = ""
+  view
+    main height="100%" background-color="#ede4fa" color="#5d3f7a"
+      scroll flex=1 min-height=0
+        column padding=26 gap=24
+          text "Soft Landing" font-size=36 font-weight=800 testId="title"
+          column align-items="center" gap=10 padding="10 0"
+            image "assets/generated/mood/mood-hero-93431a2abf9f7ef292c684a1e860076461fff836c6b09ab49fc99a5bbb5b1627.png" width=144 height=144 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="mood illustration" testId="hero"
+            text "How is your weather?" font-size=27 font-weight=700
+            text "A small pause, just for you." font-size=15 color="#8c6e9c"
+          row gap=8
+            for feeling in ["Soft", "Bright", "Heavy"] key=feeling
+              button press=choose(feeling) appearance="none" padding="16 8" min-height=56 flex=1 background-color=(moodChoice == feeling ? "#71508c" : "#f9f3ff") color=(moodChoice == feeling ? "#ffffff" : "#5d3f7a") border-radius=28 testId=`mood-${feeling}`
+                text feeling font-weight=700
+          text (moodChoice == "" ? "Every kind of day belongs here." : `Today feels ${moodChoice.toLowerCase()}.`) font-size=19 testId="feeling"
+          column gap=10
+            text "ONE THING ON YOUR MIND" font-size=11 letter-spacing=2
+            textarea value=moodNote input=write rows=3 placeholder="Leave yourself a little note…" padding=18 background-color="#fbf7ff" color="#5d3f7a" border-radius=20 testId="note"
+          button press=saveNote disabled=(moodNote.trim() == "") appearance="none" padding=18 min-height=56 background-color="#eab99e" color="#5d3f7a" border-radius=28 testId="save"
+            text "Keep this thought" font-size=18 font-weight=700
+          if moodSaved != ""
+            column gap=8 padding=18 border-radius=18 background-color="#dfd0ef"
+              text "A NOTE TO YOURSELF" font-size=11 letter-spacing=2
+              text moodSaved font-size=18 testId="saved"
+          button press=clear appearance="none" padding=12 min-height=44 color="#8c6e9c" testId="clear"
+            text "Start a new check-in"

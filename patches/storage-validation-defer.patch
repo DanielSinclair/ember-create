@@ -1,0 +1,98 @@
+diff --git a/js/src/door.rs b/js/src/door.rs
+index bbc5980..6fab379 100644
+--- a/js/src/door.rs
++++ b/js/src/door.rs
+@@ -64,7 +64,9 @@ pub(crate) unsafe extern "C" fn host_door(
+             Some(store) => {
+                 // A read even at bake: the build compiles no answer that tried.
+                 (*store).observe_external_read();
+-                if state.baking {
++                // A disposable replacement has no storage authority either.
++                // Leave its resource deferred until the committed host binds it.
++                if state.baking || state.validating {
+                     Err("bake".into())
+                 } else {
+                     // `a` is the path a file operation names: a document
+diff --git a/js/src/lib.rs b/js/src/lib.rs
+index c81e16d..6f1e26f 100644
+--- a/js/src/lib.rs
++++ b/js/src/lib.rs
+@@ -920,7 +920,13 @@ impl Module {
+                     .map_err(|e| DataError::Unavailable(format!("`{source}` threw: {e}")))?;
+                 reply = Module::decode_reply(sig, engine, source, &text)?;
+             }
+-            Ok(Module::step(sig, engine, source, reply, self.host.baking))
++            Ok(Module::step(
++                sig,
++                engine,
++                source,
++                reply,
++                self.host.baking || self.host.validating,
++            ))
+         })();
+         self.host.store = None;
+         let deadline = self.snapshot_deadline.is_some();
+diff --git a/js/tests/it/storage.rs b/js/tests/it/storage.rs
+index c5b6641..c533454 100644
+--- a/js/tests/it/storage.rs
++++ b/js/tests/it/storage.rs
+@@ -159,6 +159,59 @@ fn native_modules_are_deferred_retired_and_unavailable_to_validation() {
+     );
+ }
+ 
++#[test]
++fn replacement_storage_is_deferred_then_reads_the_committed_directory() {
++    let root = Root::new();
++    std::fs::create_dir_all(root.0.join("data")).unwrap();
++    std::fs::write(root.0.join("data/kept"), "real device contents").unwrap();
++    let plan = contract::compile("shape Result\n  text: string\ncomponent App\n  resource saved = work(\"read-at\", \"kept\") as shape Result else empty()\n  view\n    text saved.text\n").unwrap();
++    let mut module = root.module();
++    module.activate_for_validation().unwrap();
++    let validation = Runner::boot(
++        plan.clone(),
++        module,
++        Kernel::with_monospace(),
++        Default::default(),
++        "/",
++    )
++    .unwrap();
++    assert!(validation.resource_reads_store("saved"));
++    assert_eq!(text(validation.resource("saved").unwrap().clone()), "");
++    let mut live = Runner::boot_carrying(
++        plan,
++        root.module(),
++        Kernel::with_monospace(),
++        &validation.carry(),
++        Default::default(),
++        "/",
++    )
++    .unwrap();
++    live.data().activate().unwrap();
++    live.data_ready().unwrap();
++    for _ in 0..100 {
++        if !live.has_pending() {
++            break;
++        }
++        for request in live.take_requests() {
++            let work = live
++                .data()
++                .continuation(request.request.continuation.unwrap())
++                .unwrap();
++            live.fulfill(request.ticket, std::thread::spawn(work).join().unwrap())
++                .unwrap();
++        }
++    }
++    assert!(!live.has_pending());
++    assert_eq!(
++        text(live.resource("saved").unwrap().clone()),
++        "real device contents"
++    );
++    assert_eq!(
++        std::fs::read_to_string(root.0.join("data/kept")).unwrap(),
++        "real device contents"
++    );
++}
++
+ #[test]
+ fn storage_is_lazy_persistent_isolated_and_grant_checked() {
+     let root = Root::new();

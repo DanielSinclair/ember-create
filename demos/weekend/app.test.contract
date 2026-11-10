@@ -1,0 +1,9 @@
+test "the day and checklist are remembered"
+  tap "day-Sunday"
+  tap "walk"
+  tap "picnic"
+  reload
+  expect text "day" == "Sunday"
+  expect text "progress" == "2 of 3 little joys"
+  tap "reset"
+  expect text "progress" == "0 of 3 little joys"

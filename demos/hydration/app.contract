@@ -1,28 +1,38 @@
-component HydrationApp
-  state total = 0
-
+component SipClub
+  state hydrationTotal = 0 persist
+  state hydrationGoal = 2000 persist
+  derive sipsLeft = max(0, hydrationGoal - hydrationTotal)
   action addWater
-    total = total + 250
-
+    hydrationTotal = hydrationTotal + 250
+  action undo
+    hydrationTotal = max(0, hydrationTotal - 250)
   action reset
-    total = 0
-
+    hydrationTotal = 0
+  action goal
+    hydrationGoal = hydrationGoal == 2000 ? 2500 : 2000
   view
-    column height="100%"
-      header
-        h1 "Hydration"
+    main height="100%" background-color="#d8efff" color="#12457a"
       scroll flex=1 min-height=0
-        column padding=24 gap=28 max-width=520 align-self="center"
-          column gap=6
-            text "A MOMENT TO RECHARGE" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
-            text "Keep the good habit flowing." font="-exact-title1"
-          column gap=16 align-items="center" padding="40 24" background-color="-exact-secondary-grouped-background" border-radius=28
-            text "WATER ADDED" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
-            text `${total} mL` font-size=64 font-weight=700 font-variant-numeric="tabular-nums" testId="total"
-            text "Small sips add up." font="-exact-title3" color="-exact-secondary-label"
-          column gap=14
-            button press=addWater buttonStyle="filled" testId="add-water"
-              text "Add water"
-            text "+250 mL per tap" font="-exact-footnote" color="-exact-secondary-label" text-align="center"
-            button press=reset buttonStyle="bordered" testId="reset"
-              text "Reset"
+        column padding=26 gap=24
+          row align-items="center"
+            text "Sip Club" font-size=38 font-weight=800 flex=1 testId="title"
+            text "DAILY POUR" font-size=11 letter-spacing=2 font-weight=700
+          column align-items="center" gap=12 padding="20 0"
+            image "assets/generated/hydration/hydration-hero-c77bb5c4c552ab2f85f4a1e7c124e411f751d5d3306b44ab797b64e3b1191ac8.png" width=144 height=144 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="hydration illustration" testId="hero"
+            text `${hydrationTotal}` font-size=76 font-weight=800 font-variant-numeric="tabular-nums" testId="total"
+            text `mL of ${hydrationGoal} mL` font-size=18
+          row height=2 background-color="#9dc8eb"
+          row gap=12 align-items="center"
+            column flex=1 gap=4
+              text (sipsLeft == 0 ? "Goal reached!" : `${sipsLeft} mL to your goal`) font-size=23 font-weight=700 testId="progress"
+              text "Your own tally, one glass at a time." font-size=14 color="#4a7095"
+            image "symbol:sf/sparkles" font-size=30 color="#ec876c"
+          button press=addWater appearance="none" min-height=64 padding=18 border-radius=32 background-color="#ec876c" color="#382521" testId="add-water"
+            text "+ Pour a glass · 250 mL" font-size=20 font-weight=700
+          row gap=12
+            button press=undo appearance="none" min-height=48 padding=14 background-color="#edf7ff" color="#12457a" border-radius=24 flex=1 testId="undo"
+              text "Undo glass"
+            button press=reset appearance="none" min-height=48 padding=14 background-color="#edf7ff" color="#12457a" border-radius=24 flex=1 testId="reset"
+              text "New day"
+          button press=goal appearance="none" min-height=44 padding=12 color="#12457a" testId="goal"
+            text `Daily target: ${hydrationGoal} mL · change`

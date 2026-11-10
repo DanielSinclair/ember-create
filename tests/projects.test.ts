@@ -26,7 +26,7 @@ test('validates generated project metadata and avoids overwriting an existing na
 test('direct demo lookup works without first listing projects', async () => {
   const project = await getProject('pedometer');
   expect(project.demo).toBe(true);
-  expect(project.name).toBe('Stride');
+  expect(project.name).toBe(JSON.parse(await readFile(join(import.meta.dir, '../demos/pedometer/demo.json'), 'utf8')).name);
 });
 
 test('saves distinct projects and changes selection without changing their source', async () => {

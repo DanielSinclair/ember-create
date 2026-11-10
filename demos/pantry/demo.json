@@ -1,0 +1,11 @@
+{
+  "id": "pantry",
+  "name": "Pantry Party",
+  "description": "Pick ingredients and find a simple meal to make.",
+  "prompt": "Pick ingredients and find a simple meal to make.",
+  "provider": "curated-demo",
+  "demo": true,
+  "demoVersion": 2,
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "createdAt": "2026-11-10T05:19:35.015068+00:00"
+}

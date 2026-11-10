@@ -1,0 +1,11 @@
+{
+  "id": "reading",
+  "name": "Reading Nook",
+  "description": "A digital bookshelf: identify a book with Muse Spark, paint a cover with Muse Image, and save it locally.",
+  "prompt": "Identify books from a title and story or cover description, reconstruct their covers with Muse Image, and keep a personal digital bookshelf.",
+  "provider": "curated-demo",
+  "demo": true,
+  "demoVersion": 2,
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "createdAt": "2026-11-10T05:19:35.015068+00:00"
+}

@@ -1,4 +1,8 @@
-test "health explanation is visible without fabricating a step total"
-  expect text "title" == "Stride"
+test "the garden never fabricates steps and keeps its goal"
+  expect text "title" == "Step Garden"
   expect tree has "privacy-note"
   expect tree missing "steps"
+  tap "goal"
+  expect state pedometerGoal == 5000
+  reload
+  expect state pedometerGoal == 5000

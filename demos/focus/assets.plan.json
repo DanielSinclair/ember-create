@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "focus-hero",
+      "purpose": "Small custom sticker accent; standard controls use SF Symbols",
+      "placement": "hero region below the screen title; keep controls and figures as real UI",
+      "width": 128,
+      "height": 128,
+      "style": "handmade 3D clay and paper-cut sticker, terracotta and butter yellow, soft tactile shading, crisp silhouette",
+      "prompt": "a sculptural terracotta kitchen timer beside a small orange sun and folded paper. Handmade 3D clay and paper-cut illustration in terracotta and butter yellow. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+      "background": "transparent",
+      "output": "assets/focus-hero.png",
+      "status": "planned"
+    }
+  ]
+}

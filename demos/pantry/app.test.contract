@@ -1,0 +1,8 @@
+test "ingredients change the suggestion and saving is remembered"
+  expect text "meal" == "Green pantry pasta"
+  tap "pasta"
+  tap "beans"
+  expect text "meal" == "Cozy bean toast"
+  tap "save"
+  reload
+  expect text "saved" == "Saved for tonight"

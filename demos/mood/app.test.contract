@@ -1,0 +1,9 @@
+test "a mood and thought survive a relaunch"
+  tap "mood-Bright"
+  type "note" "A sunny walk helped."
+  tap "save"
+  reload
+  expect text "feeling" == "Today feels bright."
+  expect text "saved" == "A sunny walk helped."
+  tap "clear"
+  expect tree missing "saved"

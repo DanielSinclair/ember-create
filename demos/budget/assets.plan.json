@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "budget-hero",
+      "purpose": "Small custom sticker accent; standard controls use SF Symbols",
+      "placement": "hero region below the screen title; keep controls and figures as real UI",
+      "width": 128,
+      "height": 128,
+      "style": "handmade 3D clay and paper-cut sticker, cobalt blue and apricot, soft tactile shading, crisp silhouette",
+      "prompt": "a soft cobalt coin purse with three chunky golden coins and an apricot receipt. Handmade 3D clay and paper-cut illustration in cobalt blue and apricot. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+      "background": "transparent",
+      "output": "assets/budget-hero.png",
+      "status": "planned"
+    }
+  ]
+}

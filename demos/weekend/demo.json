@@ -1,0 +1,11 @@
+{
+  "id": "weekend",
+  "name": "Small Adventures",
+  "description": "Choose a day and keep a lightweight weekend checklist.",
+  "prompt": "Choose a day and keep a lightweight weekend checklist.",
+  "provider": "curated-demo",
+  "demo": true,
+  "demoVersion": 2,
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "createdAt": "2026-11-10T05:19:35.015068+00:00"
+}

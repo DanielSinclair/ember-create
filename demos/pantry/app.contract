@@ -1,0 +1,45 @@
+component PantryParty
+  state pantryPasta = true persist
+  state pantryBeans = false persist
+  state pantryGreens = true persist
+  state pantrySaved = false persist
+  derive meal = pantryPasta and pantryGreens ? "Green pantry pasta" : pantryBeans ? "Cozy bean toast" : "A little fridge picnic"
+  derive detail = pantryPasta and pantryGreens ? "Pasta + greens + olive oil. Toss, twirl, enjoy." : pantryBeans ? "Warm beans on toast. Lemon makes it sing." : "Pick a bread, a spread, and something crunchy."
+  action pasta
+    pantryPasta = not pantryPasta
+    pantrySaved = false
+  action beans
+    pantryBeans = not pantryBeans
+    pantrySaved = false
+  action greens
+    pantryGreens = not pantryGreens
+    pantrySaved = false
+  action saveMeal
+    pantrySaved = not pantrySaved
+  view
+    main height="100%" background-color="#fff3df" color="#79382d"
+      scroll flex=1 min-height=0
+        column padding=26 gap=24
+          row align-items="center"
+            text "Pantry Party" font-size=35 font-weight=800 flex=1 testId="title"
+            image "symbol:sf/carrot.fill" font-size=34 color="#d75438"
+          text "Good things are already in your kitchen." font-size=23 font-weight=600
+          row gap=14 align-items="center" padding="14 0"
+            image "assets/generated/pantry/pantry-hero-df47ebda5eca0a1ea49f1ffffe4d9c1add86e14910c9e9ae929810ebb99ea98a.png" width=136 height=136 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="pantry illustration" testId="hero"
+            column flex=1 gap=5
+              text "WHAT'S IN?" font-size=11 letter-spacing=2
+              text "Tap your ingredients" font-size=21 font-weight=700
+          row gap=8
+            button press=pasta appearance="none" padding="14 9" min-height=48 flex=1 border-radius=24 background-color=(pantryPasta ? "#d75438" : "#f2d8b2") color=(pantryPasta ? "#ffffff" : "#79382d") testId="pasta"
+              text "Pasta"
+            button press=beans appearance="none" padding="14 9" min-height=48 flex=1 border-radius=24 background-color=(pantryBeans ? "#d75438" : "#f2d8b2") color=(pantryBeans ? "#ffffff" : "#79382d") testId="beans"
+              text "Beans"
+            button press=greens appearance="none" padding="14 9" min-height=48 flex=1 border-radius=24 background-color=(pantryGreens ? "#d75438" : "#f2d8b2") color=(pantryGreens ? "#ffffff" : "#79382d") testId="greens"
+              text "Greens"
+          row height=2 background-color="#d75438"
+          column gap=12 padding="12 0"
+            text "TONIGHT'S LITTLE IDEA" font-size=11 letter-spacing=2
+            text meal font-size=34 font-weight=800 testId="meal"
+            text detail font-size=18 color="#91624b"
+          button press=saveMeal appearance="none" padding=18 min-height=58 background-color="#658455" color="#ffffff" border-radius=28 testId="save"
+            text (pantrySaved ? "Saved for tonight" : "Save for tonight") font-size=18 font-weight=700 testId="saved"

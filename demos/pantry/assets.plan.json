@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "pantry-hero",
+      "purpose": "Friendly editorial sticker hero for the first screen",
+      "placement": "hero region below the screen title; keep controls and figures as real UI",
+      "width": 512,
+      "height": 512,
+      "style": "handmade 3D clay and paper-cut sticker, tomato red and warm cream, soft tactile shading, crisp silhouette",
+      "prompt": "a playful tomato, lemon, basil sprig and pasta bow arranged like kitchen stickers. Handmade 3D clay and paper-cut illustration in tomato red and warm cream. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+      "background": "transparent",
+      "output": "assets/pantry-hero.png",
+      "status": "planned"
+    }
+  ]
+}

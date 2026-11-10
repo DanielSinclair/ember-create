@@ -3,6 +3,23 @@ import { generationPrompt } from '../src/providers';
 
 const request = 'Build an app that allows me to see my step count; it should be green and show a plant growing as I get closer to 10,000 step goal each day';
 
+test('runtime AI requests get direct Muse helpers while ordinary apps stay offline', async () => {
+  const dynamic = await generationPrompt('bookshelf', 'Find a book from its title or description and reconstruct its cover with Muse Image');
+  expect(dynamic).toContain('RUNTIME MUSE API');
+  expect(dynamic).toContain("from './muse'");
+  expect(dynamic).toContain('meta/muse-spark-1.3');
+  expect(dynamic).toContain('model-memory identification, not verified web search');
+  expect(dynamic).toContain('do not repeat billed generation');
+  expect(dynamic).toContain('Never embed provider keys');
+  expect(dynamic).toContain('No server is used');
+  expect(dynamic).not.toContain('No network calls.');
+  const offline = await generationPrompt('water', 'A daily water intake tracker with a blue sticker hero');
+  expect(offline).not.toContain('RUNTIME MUSE API');
+  expect(offline).toContain('No network calls.');
+  const revision = await generationPrompt('bookshelf', 'Make the buttons blue', { name: 'Shelf', contract: 'component Shelf', typescript: "import { museSearchBook } from './muse';", tests: '' });
+  expect(revision).toContain('RUNTIME MUSE API');
+});
+
 test('the original singular step-count request gets real HealthKit instructions and resource grammar', async () => {
   const prompt = await generationPrompt('step-sprout', request);
   expect(prompt).toContain('HEALTH DATA REQUIREMENT');

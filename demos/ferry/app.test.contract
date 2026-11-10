@@ -1,0 +1,11 @@
+test "direction changes to the correct published sailing subset"
+  expect text "outing" == "Your pick: 6:30 AM → 6:50 AM"
+  tap "swap"
+  expect text "direction" == "San Francisco → Alameda"
+  expect text "outing" == "Your pick: 7:50 AM → 8:10 AM"
+  tap "sailing-10:25 AM → 10:45 AM"
+  tap "pack"
+  reload
+  expect text "outing" == "Your pick: 10:25 AM → 10:45 AM"
+  expect state ferryPacked == true
+  expect tree has "schedule-note"

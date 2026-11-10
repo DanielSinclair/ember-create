@@ -1,0 +1,21 @@
+[
+  {
+    "id": "hydration-hero",
+    "purpose": "Friendly editorial sticker hero for the first screen",
+    "placement": "hero region below the screen title; keep controls and figures as real UI",
+    "width": 512,
+    "height": 512,
+    "style": "handmade 3D clay and paper-cut sticker, pool blue and coral, soft tactile shading, crisp silhouette",
+    "prompt": "a chunky transparent water glass with a smiling blue water droplet and coral straw. Handmade 3D clay and paper-cut illustration in pool blue and coral. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+    "background": "transparent",
+    "mimeType": "image/png",
+    "actualWidth": 512,
+    "actualHeight": 512,
+    "path": "assets/generated/hydration/hydration-hero-c77bb5c4c552ab2f85f4a1e7c124e411f751d5d3306b44ab797b64e3b1191ac8.png",
+    "sha256": "c77bb5c4c552ab2f85f4a1e7c124e411f751d5d3306b44ab797b64e3b1191ac8",
+    "model": "meta/muse-image",
+    "generatedWidth": 1600,
+    "generatedHeight": 1600,
+    "hasAlpha": false
+  }
+]

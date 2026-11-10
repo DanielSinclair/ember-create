@@ -1,0 +1,21 @@
+[
+  {
+    "id": "weekend-hero",
+    "purpose": "Friendly editorial sticker hero for the first screen",
+    "placement": "hero region below the screen title; keep controls and figures as real UI",
+    "width": 512,
+    "height": 512,
+    "style": "handmade 3D clay and paper-cut sticker, sunflower yellow and midnight blue, soft tactile shading, crisp silhouette",
+    "prompt": "a picnic tote with striped blanket, an orange, and a tiny blue field camera. Handmade 3D clay and paper-cut illustration in sunflower yellow and midnight blue. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+    "background": "transparent",
+    "mimeType": "image/png",
+    "actualWidth": 512,
+    "actualHeight": 512,
+    "path": "assets/generated/weekend/weekend-hero-ced1fdee7655c26d9030246137fe34c3646b2ac366dd587342c19d5dc81ffa66.png",
+    "sha256": "ced1fdee7655c26d9030246137fe34c3646b2ac366dd587342c19d5dc81ffa66",
+    "model": "meta/muse-image",
+    "generatedWidth": 1600,
+    "generatedHeight": 1600,
+    "hasAlpha": false
+  }
+]

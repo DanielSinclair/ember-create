@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "water-hero",
+      "purpose": "Friendly editorial sticker hero for the first screen",
+      "placement": "hero region below the screen title; keep controls and figures as real UI",
+      "width": 512,
+      "height": 512,
+      "style": "handmade 3D clay and paper-cut sticker, forest green and pistachio, soft tactile shading, crisp silhouette",
+      "prompt": "three friendly houseplants in mismatched pastel ceramic pots, a small watering can. Handmade 3D clay and paper-cut illustration in forest green and pistachio. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+      "background": "transparent",
+      "output": "assets/water-hero.png",
+      "status": "planned"
+    }
+  ]
+}

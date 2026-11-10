@@ -1,43 +1,53 @@
-component Water
-  state glasses = 0
-  state goal = 8
-
-  derive remaining = glasses >= goal ? 0 : goal - glasses
-  derive percent = glasses >= goal ? 100 : round(glasses / goal * 100)
-  derive status = glasses >= goal ? "Goal reached!" : `${remaining} ${remaining == 1 ? "glass" : "glasses"} to go`
-
-  action addGlass
-    glasses = glasses + 1
-  action undoGlass
-    if glasses > 0
-      glasses = glasses - 1
-  action reset
-    glasses = 0
-
+component LittleGarden
+  state waterFern = false persist
+  state waterMonstera = false persist
+  state waterPothos = false persist
+  derive watered = (waterFern ? 1 : 0) + (waterMonstera ? 1 : 0) + (waterPothos ? 1 : 0)
+  action fern
+    waterFern = not waterFern
+  action monstera
+    waterMonstera = not waterMonstera
+  action pothos
+    waterPothos = not waterPothos
+  action newRound
+    waterFern = false
+    waterMonstera = false
+    waterPothos = false
   view
-    column height="100%" testId="app"
-      header
-        h1 "Water"
-      scroll id="main" flex=1 min-height=0
-        column padding=24 gap=24 max-width=520 align-self="center"
-          column gap=6
-            text "MAKE ROOM FOR A WATER BREAK" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
-            text "One glass at a time." font="-exact-title1"
-          column align-items="center" gap=12 padding="32 24" background-color="-exact-secondary-grouped-background" border-radius=28
-            text "TODAY" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
-            text `${glasses}` font-size=80 font-weight=700 font-variant-numeric="tabular-nums" testId="glasses-count"
-            text "glasses of water" font="-exact-title3" color="-exact-secondary-label"
-            text status font="-exact-headline" testId="status"
-          row gap=16 align-items="center"
-            column flex=1 min-width=0 gap=4
-              text "Daily goal" font="-exact-footnote" color="-exact-secondary-label"
-              text `${glasses} of ${goal} glasses` font="-exact-headline" testId="progress"
-            text `${percent}%` font="-exact-title1" font-variant-numeric="tabular-nums" testId="percent"
-          column gap=12
-            button press=addGlass buttonStyle="filled" testId="add-glass"
-              text "Add glass"
-            row gap=12
-              button press=undoGlass disabled=(glasses == 0) buttonStyle="bordered" flex=1 testId="undo-glass"
-                text "Undo"
-              button press=reset disabled=(glasses == 0) buttonStyle="bordered" flex=1 testId="reset"
-                text "Reset"
+    main height="100%" background-color="#f1f5dc" color="#173f31"
+      scroll flex=1 min-height=0
+        column padding=24 gap=24
+          row align-items="center"
+            column flex=1 gap=4
+              text "Little Garden" font-size=34 font-weight=800 testId="title"
+              text "A little care goes a long way." color="#57705a" font-size=15
+            image "symbol:sf/sun.max.fill" font-size=30 color="#d89a31"
+          row align-items="center" gap=20 padding="20 4"
+            image "assets/generated/water/water-hero-051850a02bf03d8f39deae718f3aad634066adce6fbd7c572f53d1327035e389.png" width=136 height=136 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="water illustration" testId="hero"
+            column gap=4
+              text `${watered}/3` font-size=60 font-weight=800 font-variant-numeric="tabular-nums" testId="watered"
+              text "plants watered" color="#57705a"
+          text "YOUR WINDOWSILL" font-size=12 letter-spacing=2 font-weight=700
+          button press=fern appearance="none" padding=18 min-height=76 background-color=(waterFern ? "#c6dfab" : "#ffffff") color="#173f31" border-radius=22 testId="fern"
+            row gap=14 align-items="center"
+              image "symbol:sf/leaf" font-size=28
+              column flex=1 gap=3
+                text "Fern" font-size=20 font-weight=700
+                text (waterFern ? "Freshly watered" : "Likes a little mist") font-size=13 color="#57705a"
+              image (waterFern ? "symbol:sf/checkmark.circle.fill" : "symbol:sf/drop") font-size=24
+          button press=monstera appearance="none" padding=18 min-height=76 background-color=(waterMonstera ? "#c6dfab" : "#ffffff") color="#173f31" border-radius=22 testId="monstera"
+            row gap=14 align-items="center"
+              image "symbol:sf/leaf.fill" font-size=28
+              column flex=1 gap=3
+                text "Monstera" font-size=20 font-weight=700
+                text (waterMonstera ? "Freshly watered" : "Check the soil first") font-size=13 color="#57705a"
+              image (waterMonstera ? "symbol:sf/checkmark.circle.fill" : "symbol:sf/drop") font-size=24
+          button press=pothos appearance="none" padding=18 min-height=76 background-color=(waterPothos ? "#c6dfab" : "#ffffff") color="#173f31" border-radius=22 testId="pothos"
+            row gap=14 align-items="center"
+              image "symbol:sf/leaf" font-size=28
+              column flex=1 gap=3
+                text "Pothos" font-size=20 font-weight=700
+                text (waterPothos ? "Freshly watered" : "Easygoing, like you") font-size=13 color="#57705a"
+              image (waterPothos ? "symbol:sf/checkmark.circle.fill" : "symbol:sf/drop") font-size=24
+          button press=newRound appearance="none" padding=14 min-height=48 color="#173f31" testId="new-round"
+            text "Start a fresh watering round"

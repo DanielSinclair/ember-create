@@ -1,0 +1,21 @@
+[
+  {
+    "id": "budget-hero",
+    "purpose": "Friendly editorial sticker hero for the first screen",
+    "placement": "hero region below the screen title; keep controls and figures as real UI",
+    "width": 128,
+    "height": 128,
+    "style": "handmade 3D clay and paper-cut sticker, cobalt blue and apricot, soft tactile shading, crisp silhouette",
+    "prompt": "a soft cobalt coin purse with three chunky golden coins and an apricot receipt. Handmade 3D clay and paper-cut illustration in cobalt blue and apricot. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+    "background": "transparent",
+    "mimeType": "image/png",
+    "actualWidth": 128,
+    "actualHeight": 128,
+    "path": "assets/generated/budget/budget-hero-c95b4dc9764c339e099a92e0f4dbe8ea33960d52142008161c88e6dad39399ed.png",
+    "sha256": "c95b4dc9764c339e099a92e0f4dbe8ea33960d52142008161c88e6dad39399ed",
+    "model": "meta/muse-image",
+    "generatedWidth": 1600,
+    "generatedHeight": 1600,
+    "hasAlpha": false
+  }
+]

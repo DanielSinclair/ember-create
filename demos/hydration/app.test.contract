@@ -1,19 +1,13 @@
-test "water accumulates in 250 mL increments"
-  expect text "total" == "0 mL"
+test "glasses add, undo, and survive relaunch"
   tap "add-water"
-  expect state total == 250
-  expect text "total" == "250 mL"
   tap "add-water"
-  expect state total == 500
-  expect text "total" == "500 mL"
+  tap "undo"
+  expect text "total" == "250"
+  reload
+  expect text "total" == "250"
+  tap "reset"
+  expect text "total" == "0"
 
-test "reset clears water and counting can restart"
-  tap "reset"
-  expect text "total" == "0 mL"
-  tap "add-water"
-  tap "add-water"
-  tap "reset"
-  expect state total == 0
-  expect text "total" == "0 mL"
-  tap "add-water"
-  expect text "total" == "250 mL"
+test "the daily target can be changed"
+  tap "goal"
+  expect state hydrationGoal == 2500

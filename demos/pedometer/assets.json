@@ -1,0 +1,21 @@
+[
+  {
+    "id": "pedometer-hero",
+    "purpose": "Friendly editorial sticker hero for the first screen",
+    "placement": "hero region below the screen title; keep controls and figures as real UI",
+    "width": 512,
+    "height": 512,
+    "style": "handmade 3D clay and paper-cut sticker, violet and acid-lime, soft tactile shading, crisp silhouette",
+    "prompt": "a friendly potted fern with curling leaves, tiny lilac sneakers beside its pot. Handmade 3D clay and paper-cut illustration in violet and acid-lime. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+    "background": "transparent",
+    "mimeType": "image/png",
+    "actualWidth": 512,
+    "actualHeight": 512,
+    "path": "assets/generated/pedometer/pedometer-hero-ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224.png",
+    "sha256": "ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224",
+    "model": "meta/muse-image",
+    "generatedWidth": 1600,
+    "generatedHeight": 1600,
+    "hasAlpha": false
+  }
+]

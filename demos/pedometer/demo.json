@@ -1,9 +1,11 @@
 {
   "id": "pedometer",
-  "name": "Stride",
-  "prompt": "A private daily pedometer using Apple HealthKit, with explicit permission, refresh, and honest empty states.",
-  "provider": "manual-healthkit-demo",
+  "name": "Step Garden",
+  "prompt": "Real Apple Health steps with a growing botanical companion.",
+  "provider": "curated-demo",
   "createdAt": "2026-11-10T03:42:45.103Z",
-  "updatedAt": "2026-11-10T03:42:45.103Z",
-  "demo": true
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "demo": true,
+  "description": "Real Apple Health steps with a growing botanical companion.",
+  "demoVersion": 2
 }

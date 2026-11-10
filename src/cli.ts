@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { DATA, getProject, listProjects, saveProject, selectProject, selectedProject, projectId, makeId, availableId, type Artifact, type Project, type Metadata } from './projects';
 import { generateArtifact, generateMetadata, generationPrompt, type Event } from './providers';
+import { planAssets, generateAssets } from './assets';
 import { validateProject, stageProject, startContainer, launchContainer } from '../tools/container.mjs';
 
 const argv = process.argv.slice(2);
@@ -27,7 +28,7 @@ function emit(event: Event) {
   }
   console.log(json ? JSON.stringify(event) : event.message);
   if (!json && typeof event.elapsedMs === 'number') console.log(`Generation time: ${(event.elapsedMs / 1000).toFixed(1)}s`);
-  if (!json && typeof event.totalCostUsd === 'number') console.log(`OpenRouter cost: $${event.totalCostUsd.toFixed(6)} USD (including naming and repairs)`);
+  if (!json && typeof event.totalCostUsd === 'number') console.log(`OpenRouter cost: $${event.totalCostUsd.toFixed(6)} USD (including naming, artwork and repairs)`);
 }
 function diagnosticText(raw: string): string {
   try {
@@ -48,9 +49,10 @@ function fixture(id: string, prompt: string): Artifact {
 }
 async function activate(project: Project) {
   emit({ type: 'status', message: `Validating and staging ${project.name}` });
-  const result = await stageProject({ projectId: project.id, contract: project.contract, typescript: project.typescript, tests: project.tests });
+  const result = await stageProject({ projectId: project.id, contract: project.contract, typescript: project.typescript, tests: project.tests, assets: project.assets });
   await selectProject(project.id);
   await startContainer();
+  if (project.assets?.length) emit({ type: 'assets-staged', message: `${project.assets.length} image assets staged for the simulator update stream`, assetsStaged: project.assets.length, nativeRebuild: false });
   emit({ type: 'selected', message: `Selected ${project.name}; staged for the container development stream`, id: project.id, ...result });
 }
 async function generate() {
@@ -73,15 +75,21 @@ async function generate() {
   const id = manualId || metadata?.id || makeId(request);
   let previous: Project | undefined;
   try { previous = await getProject(id); } catch (e: any) { if (e.code !== 'ENOENT') throw e; }
+  let assetPlan = previous?.assetPlan;
+  let assets = previous?.assets || [];
+  if (!argv.includes('--fixture') && !argv.includes('--no-assets') && process.env.OPENROUTER_API_KEY) {
+    assetPlan = await planAssets({ prompt: request, image, previous: assetPlan, emit });
+    assets = await generateAssets({ projectId: id, plan: assetPlan, emit });
+  }
   let artifact: Artifact | undefined = previous;
   let diagnostics: string | undefined;
   const attempts = argv.includes('--fixture') ? 1 : 3;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     emit({ type: 'status', message: `${diagnostics ? 'Repairing' : 'Generating'} ${id} with ${argv.includes('--fixture') ? 'fixture' : provider === 'openrouter' ? 'Muse Ember' : 'Codex'} (${attempt}/${attempts})`, id, attempt });
-    artifact = argv.includes('--fixture') ? fixture(id, request) : await generateArtifact({ provider, model: option('--model'), image, prompt: await generationPrompt(id, request, artifact, diagnostics, metadata), emit });
+    artifact = argv.includes('--fixture') ? fixture(id, request) : await generateArtifact({ provider, model: option('--model'), image, prompt: await generationPrompt(id, request, artifact, diagnostics, metadata, assets), emit });
     emit({ type: 'status', message: 'Checking the generated Contract and TypeScript' });
     try {
-      await validateProject({ projectId: id, contract: artifact.contract, typescript: artifact.typescript });
+      await validateProject({ projectId: id, contract: artifact.contract, typescript: artifact.typescript, assets });
       diagnostics = undefined;
       break;
     } catch (e: any) {
@@ -90,7 +98,7 @@ async function generate() {
     }
   }
   if (!artifact || diagnostics) throw new Error(`Generation failed validation after ${attempts} attempt(s). The active app was left unchanged.\n${diagnosticText(diagnostics || '')}`);
-  const project: Project = { ...artifact, name: metadata?.name || artifact.name, description: metadata?.description || previous?.description, demo: previous?.demo, id, prompt: request, provider: argv.includes('--fixture') ? 'fixture' : provider, createdAt: previous?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const project: Project = { ...artifact, name: metadata?.name || artifact.name, description: metadata?.description || previous?.description, demo: previous?.demo, demoSourceHash: previous?.demoSourceHash, assets, assetPlan, id, prompt: request, provider: argv.includes('--fixture') ? 'fixture' : provider, createdAt: previous?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
   await saveProject(project);
   if (!argv.includes('--no-select')) await activate(project);
   emit({ type: 'result', message: `Generated ${project.name}`, id, name: project.name, description: project.description, directory: join(DATA, 'projects', id), elapsedMs: Math.round(performance.now() - started), selected: !argv.includes('--no-select'), runLog, ...(hasReportedCost ? { totalCostUsd: totalCost } : {}) });
@@ -124,7 +132,23 @@ try {
       emit({ type: 'result', message: 'iOS container launched', ...result });
       break;
     }
-    default: emit({ type: 'help', message: 'Exact Create\n  generate "Describe an app" [--id id] [--image path] [--provider codex|openrouter] [--model model]\n  list\n  select <id>\n  serve [--port 8791]\n  ios [--sim simulator-id]\n\nAdd --json for JSONL events. --fixture generates a deterministic test counter. --no-select validates and saves without changing the container.' });
+    case 'testflight': {
+      const id = argv[1] && !argv[1].startsWith('--') ? argv[1] : await selectedProject();
+      if (!id) throw new Error('Choose a saved app in Builds before submitting to TestFlight.');
+      const { publishProject } = await import('../tools/testflight.mjs');
+      const result = await publishProject({ project: await getProject(id), emit, dryRun: argv.includes('--dry-run') });
+      emit({ type: 'result', message: result.uploaded ? 'Uploaded the selected app to TestFlight' : result.ready ? 'TestFlight preflight ready' : `TestFlight setup needed:\n${result.blockers.join('\n')}`, ...result });
+      break;
+    }
+    case 'testflight-container': {
+      const { prepareDemoContainer } = await import('../tools/demo-container.mjs');
+      const { publishContainer } = await import('../tools/testflight.mjs');
+      const source = await prepareDemoContainer({ emit });
+      const result = await publishContainer({ ...source, emit, dryRun: argv.includes('--dry-run') });
+      emit({ type: 'result', message: result.uploaded ? 'Uploaded the 10-demo container to TestFlight' : result.ready ? 'Demo container TestFlight preflight ready' : `Demo container TestFlight setup needed:\n${result.blockers.join('\n')}`, ...result });
+      break;
+    }
+    default: emit({ type: 'help', message: 'Exact Create\n  generate "Describe an app" [--id id] [--image path] [--provider codex|openrouter] [--model model] [--no-assets]\n  list\n  select <id>\n  serve [--port 8791]\n  ios [--sim simulator-id]\n  testflight [id] [--dry-run]\n  testflight-container [--dry-run]\n\nAdd --json for JSONL events. --fixture generates a deterministic test counter. --no-select validates and saves without changing the container.' });
   }
 } catch (error: any) {
   emit({ type: 'error', message: error.message || String(error), ...(generationStarted !== undefined ? { elapsedMs: Math.round(performance.now() - generationStarted) } : {}), ...(hasReportedCost ? { totalCostUsd: totalCost } : {}) });

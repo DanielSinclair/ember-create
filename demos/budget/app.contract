@@ -1,0 +1,49 @@
+component PocketMoney
+  state budgetEnvelope = 250 persist
+  state budgetSpent = 0 persist
+  state budgetLast = "Your week starts here." persist
+  action spend(amount: number, label: string)
+    budgetSpent = budgetSpent + amount
+    budgetLast = `${label} · $${amount}`
+  action moreRoom
+    budgetEnvelope = budgetEnvelope + 50
+  action newWeek
+    budgetSpent = 0
+    budgetLast = "Fresh envelope, fresh week."
+  view
+    main height="100%" background-color="#ffe2bd" color="#183d99"
+      scroll flex=1 min-height=0
+        column padding=26 gap=24
+          row align-items="center"
+            column gap=4 flex=1
+              text "Pocket Money" font-size=33 font-weight=800 testId="title"
+              text "Your little weekly envelope" font-size=15
+            image "assets/generated/budget/budget-hero-c95b4dc9764c339e099a92e0f4dbe8ea33960d52142008161c88e6dad39399ed.png" width=64 height=64 object-fit="contain" background-color="#ffffff" border-radius=16 overflow="hidden" aria-label="budget illustration" testId="hero"
+          column padding="28 22" gap=12 background-color="#2346b8" color="#fff0d9" border-radius=28
+            text "LEFT TO PLAY WITH" font-size=12 letter-spacing=2
+            text `$${budgetEnvelope - budgetSpent}` font-size=72 font-weight=800 font-variant-numeric="tabular-nums" testId="remaining"
+            row align-items="center"
+              text `$${budgetSpent} spent` flex=1 testId="spent"
+              text `of $${budgetEnvelope}`
+          text "QUICK ADD" font-size=12 letter-spacing=2 font-weight=700
+          row gap=10
+            button press=spend(6, "Coffee") appearance="none" padding=16 min-height=84 background-color="#fff2dd" color="#183d99" border-radius=20 flex=1 testId="coffee"
+              column gap=8 align-items="center"
+                image "symbol:sf/cup.and.saucer.fill" font-size=25
+                text "Coffee $6"
+            button press=spend(12, "Lunch") appearance="none" padding=16 min-height=84 background-color="#fff2dd" color="#183d99" border-radius=20 flex=1 testId="lunch"
+              column gap=8 align-items="center"
+                image "symbol:sf/fork.knife" font-size=25
+                text "Lunch $12"
+          button press=spend(3, "Transit") appearance="none" padding=16 min-height=52 background-color="#fff2dd" color="#183d99" border-radius=20 testId="transit"
+            text "Hop on transit · $3"
+          row height=1 background-color="#d5aa83"
+          column gap=6
+            text "LAST LITTLE SPEND" font-size=11 letter-spacing=2
+            text budgetLast font-size=20 font-weight=700 testId="last"
+          row gap=12
+            button press=moreRoom appearance="none" padding=14 min-height=48 border-radius=24 background-color="#e6ad7d" color="#183d99" flex=1 testId="more"
+              text "+$50 envelope"
+            button press=newWeek appearance="none" padding=14 min-height=48 color="#183d99" flex=1 testId="reset"
+              text "New week"
+          text "A local planning envelope. Sample amounts; no bank connection." font-size=12 color="#6c5a61"

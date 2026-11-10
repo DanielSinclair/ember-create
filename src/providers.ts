@@ -2,6 +2,7 @@ import { readFile, mkdir, rm } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { DATA, ROOT, parseArtifact, parseMetadata, type Artifact, type Metadata } from './projects';
 import { GRANTS } from '../tools/container.mjs';
+import type { GeneratedAsset } from './assets';
 
 export type Event = { type: string; message: string; [key: string]: unknown };
 export type Emit = (event: Event) => void;
@@ -58,8 +59,16 @@ function repairGuidance(previous: Artifact | undefined, diagnostics: string) {
   return '';
 }
 
-export async function generationPrompt(id: string, request: string, previous?: Artifact, diagnostics?: string, metadata?: Metadata) {
+export async function generationPrompt(id: string, request: string, previous?: Artifact, diagnostics?: string, metadata?: Metadata, assets: GeneratedAsset[] = []) {
   const guide = await readFile(join(ROOT, 'exact/docs/start-here.md'), 'utf8');
+  const dynamicAI = /\b(?:AI|chatbot|muse[ -](?:ember|spark|image))\b|\b(?:identify|reconstruct|find|search)\b.{0,50}\b(?:books?|covers?)\b|\b(?:in[ -]app|runtime|on[ -]demand|user[ -]generated)\b.{0,50}\b(?:images?|content|generation)\b/i.test(request)
+    || /from\s*['"]\.\/muse['"]/.test(previous?.typescript || '');
+  const muse = dynamicAI ? `RUNTIME MUSE API: Only for requested AI features, import { museText, museImage, saveMuseImage, museSearchBook } from './muse'. This shared helper is already provided; do not implement it or call OpenRouter directly. Signatures:
+museText(prompt: string, model: 'meta/muse-ember' | 'meta/muse-spark-1.3' = 'meta/muse-ember'): Promise<{text: string, costUsd?: number}>;
+museImage(prompt: string): Promise<{dataUri: string, mimeType: string, costUsd?: number}>;
+saveMuseImage(dataUri: string, path: string, storage): Promise<{path: string, type: string, size: number, width: number, height: number}>;
+museSearchBook(title: string, description: string): Promise<{candidate: {title: string, author: string, description: string, coverDescription: string} | null, uncertainty: string, provenance: 'model-memory'}>.
+Call these from async TypeScript answer sources in response to deliberate user actions. Show pending, retryable failure, and empty/unknown states; prevent duplicate submissions. Persist accepted results in this project's storage so redraws, refreshes, or launching the app do not repeat billed generation. The helper calls OpenRouter directly over HTTPS using OPENROUTER_API_KEY substituted from the locally configured app environment. No server is used. Never embed provider keys, tokens, URLs, or environment setup in generated app source or UI. For images, call saveMuseImage(result.dataUri, a unique app:/data/${id}-image.png path, storage) from the answer source, persist its returned .path, and use that path in an image node with suitable dimensions, object-fit, and rounded clipping. Do not render raw generated data URIs: native hosts limit their size. The helper writes and compresses the image locally without another model request. Book lookup is model-memory identification, not verified web search; display uncertainty and let users confirm before generating a cover. A generated cover is an AI reconstruction, not an authenticated publisher image. All other network access remains disallowed.\n\n` : '';
   const health = requestsHealth(request)
     ? `HEALTH DATA REQUIREMENT: Step tracking means the person's real Apple HealthKit step count. The container includes @exact/health. Use healthStatus, requestHealthAuthorization and healthStatistics with their imported shapes. A request to see step count does NOT authorize a manual counter, synthetic increments, fake data, or +100/+1000 buttons. Only use manual/sample steps when the user explicitly asks for manual entry or sample data; otherwise replace any previous artifact's loadSteps/addSteps/resetSteps simulation with the real HealthKit reference. A goal/plant visualization must derive progress from returned HealthKit samples and retain honest unavailable/empty/error states. Use its Contract API (not a TypeScript import). Treat unavailable/unknown/denied and empty data honestly. No invented health samples. Apple does not reveal whether read access was denied; an empty result is not proof of denial or zero. The exact interface follows:\n${await readFile(join(ROOT, 'exact/packages/health/exact.json'), 'utf8')}\nValidated pedometer API reference only: borrow data/permission/time wiring, not its screen layout, visual styling, headings, or lengthy privacy copy. Design the UI from this user's request.\napp.contract:\n${await readFile(join(ROOT, 'demos/pedometer/app.contract'), 'utf8')}\napp.ts:\n${await readFile(join(ROOT, 'demos/pedometer/app.ts'), 'utf8')}\n`
     : '';
@@ -70,7 +79,8 @@ export async function generationPrompt(id: string, request: string, previous?: A
     `Project ID: ${id}. Request: ${request}\n` +
     (metadata ? `App name: ${metadata.name}. Description: ${metadata.description}. Use this exact app name.\n` : '') +
     `Fields: name, contract (complete app.contract), typescript (complete app.ts, or empty if no data sources), tests (Exact behavioral test). All file strings must be raw source without Markdown code fences, including tests.\n` +
-    `This runs in a prebuilt container. No new native modules, dependencies, remote images, external assets or other files. App ID stays com.exactcreate.demo. If TypeScript is needed, export grants EXACTLY ${JSON.stringify(GRANTS)}; omit appId or use com.exactcreate.demo. Persisted paths MUST start app:/data/${id}-. Import TypeScript types only from './app.contract.d.ts'. Use a unique PascalCase root component based on project ID. Prefer Contract actions/state and native controls. Implement the requested interactions. For durable data use the supplied storage recipe. No build scripts, shell commands, or network calls. Keep it compact and valid.\n\n` +
+    `This runs in a prebuilt container. No new native modules, dependencies, arbitrary remote images, or undeclared asset files. Use only the generated image manifest below${dynamicAI ? ' or data URIs returned by the supplied Muse helper' : ''}. App ID stays com.exactcreate.demo. If TypeScript is needed, export grants EXACTLY ${JSON.stringify(GRANTS)}; omit appId or use com.exactcreate.demo. Persisted paths MUST start app:/data/${id}-. Import TypeScript types only from './app.contract.d.ts'${dynamicAI ? "; the documented runtime functions may also be imported from './muse'" : ''}. Use a unique PascalCase root component based on project ID. Prefer Contract actions/state and native controls. Implement the requested interactions. For durable data use the supplied storage recipe. No build scripts or shell commands. ${dynamicAI ? 'Network access only through the supplied Muse helper.' : 'No network calls.'} Keep it compact and valid.\n\n` + muse +
+    (assets.length ? `GENERATED IMAGE MANIFEST: These images already exist locally. Use their exact immutable paths in image nodes, place each at its intended location, size it to fit the layout using object-fit="contain" (or "cover" for a photo), and match the UI palette/style to the artwork. Do not replace the generated illustrations with SF Symbols; use SF Symbols only for standard interface icons. For progress-stage images select the appropriate image from real data; no-data states must not imply zero. Example: image "${assets[0].path}" width=180 height=180 object-fit="contain" aria-label="${assets[0].purpose.replaceAll('"', '')}". Manifest:\n${JSON.stringify(assets.map(({ file, ...asset }) => asset))}\n\n` : '') +
     resourcePrimer + designGuidance + (/\b(?:plant|sprout|seedling|garden)\b/i.test(request) ? plantGuidance : '') + health + timers + guide + (previous ? `\n\nPrevious artifact:\n${JSON.stringify(previous)}` : '') +
     (diagnostics ? `\n\n${repairGuidance(previous, diagnostics)}Fix these compiler diagnostics, preserving the requested app:\n${diagnostics.slice(-18000)}` : '');
 }
@@ -116,7 +126,7 @@ export async function generateMetadata(prompt: string, image: string | undefined
   return parseMetadata(result);
 }
 
-async function requestOpenRouter(options: { model?: string; prompt: string; image?: string; emit: Emit; schema: object; schemaName: string; maxTokens: number }): Promise<string> {
+export async function requestOpenRouter(options: { model?: string; prompt: string; image?: string; emit: Emit; schema: object; schemaName: string; maxTokens: number }): Promise<string> {
   const { prompt, image, emit } = options;
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) throw new Error('Set OPENROUTER_API_KEY for OpenRouter generation');

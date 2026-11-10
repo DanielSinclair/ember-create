@@ -1,30 +1,8 @@
-test "add glass updates count and progress, undo and reset work, goal is reached"
-  tap "add-glass"
-  clock data
-  expect text "glasses-count" == "1"
-  tap "add-glass"
-  clock data
-  expect text "glasses-count" == "2"
-  expect text "progress" == "2 of 8 glasses"
-  expect text "percent" == "25%"
-  tap "undo-glass"
-  clock data
-  expect text "glasses-count" == "1"
-  tap "reset"
-  clock data
-  expect text "glasses-count" == "0"
-  expect text "progress" == "0 of 8 glasses"
-  expect text "percent" == "0%"
-  tap "add-glass"
-  tap "add-glass"
-  tap "add-glass"
-  tap "add-glass"
-  tap "add-glass"
-  tap "add-glass"
-  tap "add-glass"
-  tap "add-glass"
-  clock data
-  expect text "glasses-count" == "8"
-  expect text "percent" == "100%"
-  expect text "status" == "Goal reached!"
-  expect state glasses == 8
+test "watering plants is remembered and a new round clears it"
+  tap "fern"
+  tap "pothos"
+  expect text "watered" == "2/3"
+  reload
+  expect text "watered" == "2/3"
+  tap "new-round"
+  expect text "watered" == "0/3"

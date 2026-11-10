@@ -5,7 +5,7 @@ and one bottom composer. A Rust data adapter runs the shared Bun CLI and streams
 its JSONL status messages into the screen. Thinking text animates with cycling dots
 and a subtle violet pulse. Cyan marks validation/building, amber marks repairs,
 green marks Ready, success and reported OpenRouter cost, and red marks failures. Labels
-remain readable without color. Generation cost includes naming and repairs and
+remain readable without color. Generation cost includes naming, artwork and repairs and
 is shown after success or failure when OpenRouter reports usage. Total generation
 time remains in the transcript. The composer wraps and grows up to six lines,
 then scrolls while keeping the caret visible.
@@ -26,6 +26,7 @@ PNG, JPEG, or WebP path.
 - **Enter** sends; **Shift+Enter** inserts a newline.
 - **Ctrl+O** launches the iOS simulator.
 - **Ctrl+B** opens builds; arrows and Enter install and open a selection.
+- **Ctrl+T** archives the selected standalone app and uploads it through `asc`; signing and App Store Connect preflight run first.
 - **Ctrl+E** switches between creating a new app and editing the selected app.
 - Drop an image to attach it; **Esc** removes it or closes the build picker.
 

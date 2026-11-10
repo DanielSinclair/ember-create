@@ -12,7 +12,10 @@ container/app.contract
 container/app.ts
 container/app.test.contract
 container/app.contract.d.ts
+container/muse.ts
 .DS_Store
 .env
 .env.*
 !.env.example
+
+/container/assets/generated/

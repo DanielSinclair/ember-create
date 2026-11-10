@@ -1,0 +1,11 @@
+test "expenses reduce the local envelope and reset clears the week"
+  tap "coffee"
+  tap "lunch"
+  expect text "remaining" == "$232"
+  expect text "last" == "Lunch · $12"
+  reload
+  expect text "remaining" == "$232"
+  tap "more"
+  expect text "remaining" == "$282"
+  tap "reset"
+  expect text "remaining" == "$300"

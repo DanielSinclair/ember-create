@@ -1,0 +1,21 @@
+[
+  {
+    "id": "mood-hero",
+    "purpose": "Friendly editorial sticker hero for the first screen",
+    "placement": "hero region below the screen title; keep controls and figures as real UI",
+    "width": 512,
+    "height": 512,
+    "style": "handmade 3D clay and paper-cut sticker, lavender and peach, soft tactile shading, crisp silhouette",
+    "prompt": "a peach sun nestled into a lavender cloud with a small smiling moon. Handmade 3D clay and paper-cut illustration in lavender and peach. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+    "background": "transparent",
+    "mimeType": "image/png",
+    "actualWidth": 512,
+    "actualHeight": 512,
+    "path": "assets/generated/mood/mood-hero-93431a2abf9f7ef292c684a1e860076461fff836c6b09ab49fc99a5bbb5b1627.png",
+    "sha256": "93431a2abf9f7ef292c684a1e860076461fff836c6b09ab49fc99a5bbb5b1627",
+    "model": "meta/muse-image",
+    "generatedWidth": 1600,
+    "generatedHeight": 1600,
+    "hasAlpha": false
+  }
+]

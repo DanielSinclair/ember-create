@@ -58,6 +58,10 @@ component Creator
     if not session.busy
       tick = 0
       send requested = launchSimulator()
+  action publish
+    if not session.busy
+      tick = 0
+      send requested = publishSelected()
   action builds
     if not session.busy
       choice = 0
@@ -70,7 +74,10 @@ component Creator
   action hideBuilds
     send requested = closePicker()
   action onKey(key: string, e: KeyboardEvent)
-    if key == "e" and e.ctrlKey
+    if key == "t" and e.ctrlKey
+      publish()
+      preventDefault()
+    else if key == "e" and e.ctrlKey
       editing = not editing
       preventDefault()
     else if key == "Escape" and not session.picker and session.attachment != ""
@@ -152,4 +159,7 @@ component Creator
             row gap="1ch"
               text "ctrl+e" color="#aaaaaa"
               text (editing ? "new app" : "edit app") color="#777777"
+            row gap="1ch"
+              text "ctrl+t" color="#c4b5fd"
+              text "TestFlight" color="#888888"
           text "shift+enter newline · drop image to attach" color="#666666"

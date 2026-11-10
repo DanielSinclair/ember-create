@@ -8,8 +8,9 @@ shape DayBounds
   start: number
   end: number
 
-component Pedometer
+component StepGarden
   state elapsed = 0
+  state pedometerGoal = 10000 persist
   resource time = exactTime() as shape Time
   resource day = dayBounds(time.epochAtZero + elapsed) as shape DayBounds
   resource health = healthStatus(read=["steps"]) as shape HealthStatus else empty()
@@ -25,51 +26,62 @@ component Pedometer
   action connect
     send asked = requestHealthAuthorization(read=["steps"])
 
+  action changeGoal
+    pedometerGoal = pedometerGoal == 10000 ? 5000 : 10000
+
   view
-    column height="100%" background-color="-exact-background"
-      header
-        h1 "Stride" testId="title"
+    main height="100%" background-color="#f1e9ff" color="#49316b"
       scroll flex=1 min-height=0
-        column padding=24 gap=28 max-width=520 align-self="center"
-          column gap=6
-            text "MOVE AT YOUR OWN PACE" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
-            text formatDate(time.epochAtZero + elapsed, time.utcOffset, "medium") font="-exact-title2" testId="date"
-          column gap=16 padding="36 24" background-color="-exact-secondary-grouped-background" border-radius=28
-            text "TODAY" font="-exact-caption1" font-weight=600 letter-spacing=1 color="-exact-secondary-label"
+        column padding=26 gap=22
+          row gap=12 align-items="center"
+            column flex=1 gap=5
+              text "Step Garden" font-size=35 font-weight=800 testId="title"
+              text "A little movement. A little growth." font-size=14 color="#827096"
+            image "symbol:sf/sun.max.fill" font-size=32 color="#b2c35a"
+          text formatDate(time.epochAtZero + elapsed, time.utcOffset, "medium") font-size=14 color="#827096" testId="date"
+          column padding=24 gap=16 align-items="center" background-color="#e0d4f3" border-radius=30
             if pending(health)
+              image "assets/generated/pedometer/pedometer-hero-ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224.png" width=120 height=120 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="pedometer illustration" testId="hero"
               text "Checking Apple Health…" testId="health-loading"
             else if not health.available
-              text "Apple Health unavailable" font="-exact-title2" testId="unavailable"
-              text "Open Stride on a supported iPhone to read your steps." color="-exact-secondary-label"
+              image "assets/generated/pedometer/pedometer-hero-ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224.png" width=120 height=120 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="pedometer illustration" testId="hero"
+              text "Your garden is waiting" font-size=26 font-weight=700 testId="unavailable"
+              text "Apple Health is unavailable here." font-size=14 color="#827096"
             else if not hasAsked
-              text "Every step counts." font="-exact-title1" testId="connect-title"
-              text "Connect Apple Health to see today's steps from the sources you share." color="-exact-secondary-label"
+              image "assets/generated/pedometer/pedometer-hero-ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224.png" width=120 height=120 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="pedometer illustration" testId="hero"
+              text "Give your steps a home" font-size=26 font-weight=700 testId="connect-title"
+              text "Connect Apple Health to grow your garden." font-size=14 color="#827096"
             else if pending(steps)
-              text "Reading today's steps…" testId="steps-loading"
+              image "assets/generated/pedometer/pedometer-hero-ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224.png" width=120 height=120 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="pedometer illustration" testId="hero"
+              text "Gathering today's steps…" testId="steps-loading"
             else if failed(steps)
-              text "Couldn't read steps" font="-exact-title2" testId="read-error"
-              text "Apple Health may be locked or temporarily unavailable. Unlock your device and try Refresh." color="-exact-secondary-label"
+              text "A little pause" font-size=26 font-weight=700 testId="read-error"
+              text "Unlock your iPhone and try Refresh." font-size=14 color="#827096"
             else
               match total
                 case some(count)
-                  text `${round(count)}` font-size=72 font-weight=700 font-variant-numeric="tabular-nums" testId="steps"
-                  text "steps shared today" font="-exact-title3" color="-exact-secondary-label"
+                  column align-items="center" gap=0 min-height=180 justify-content="end"
+                    image "symbol:sf/leaf.fill" font-size=(36 + min(1, max(0, count / pedometerGoal)) * 60) color="#678a3d" testId="plant-leaf"
+                    row width=7 height=(20 + min(1, max(0, count / pedometerGoal)) * 80) background-color="#678a3d" border-radius=5 testId="plant-stem"
+                    row width=70 height=35 background-color="#d49c76" border-radius="4 4 20 20"
+                  text `${round(count)}` font-size=64 font-weight=800 font-variant-numeric="tabular-nums" testId="steps"
+                  text `of ${pedometerGoal} steps` font-size=17 color="#827096"
                 case none
-                  text "No steps to show yet" font="-exact-title2" testId="no-data"
-                  text "There may be no samples today, or Apple Health may not be sharing them. You can review access in Health's sharing settings." color="-exact-secondary-label"
+                  image "assets/generated/pedometer/pedometer-hero-ef4690cb1922100cfd08e8aae8fe350504a3bc0f7d772e2aabe392e174721224.png" width=120 height=120 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="pedometer illustration" testId="hero"
+                  text "Room to grow" font-size=26 font-weight=700 testId="no-data"
+                  text "No shared steps yet. Check Apple Health when you're ready." font-size=14 color="#827096"
           if health.available
-            column gap=12
-              button press=connect buttonStyle="filled" disabled=pending(asked) testId="connect"
-                text (hasAsked ? "Review Health access" : "Connect Apple Health")
+            row gap=10
+              button press=connect appearance="none" padding=16 min-height=54 background-color="#b9cc72" color="#344320" border-radius=27 flex=1 disabled=pending(asked) testId="connect"
+                text (hasAsked ? "Health access" : "Connect Health") font-weight=700
               if hasAsked
-                button press=refreshToday buttonStyle="bordered" disabled=pending(steps) testId="refresh"
+                button press=refreshToday appearance="none" padding=16 min-height=54 background-color="#ffffff" color="#49316b" border-radius=27 disabled=pending(steps) testId="refresh"
                   text "Refresh"
+          button press=changeGoal appearance="none" min-height=44 padding=12 color="#49316b" testId="goal"
+            text `Your daily goal: ${pedometerGoal} · change`
           match failure(asked)
             case some(error)
-              text "Couldn't open Health authorization. Please try again." color="-exact-system-red" testId="authorization-error"
+              text "Couldn't open Health access. Please try again." color="#a74555" testId="authorization-error"
             case none
               text "" testId="authorization-error"
-          column gap=10 padding="8 0"
-            text "Private by design" font="-exact-headline"
-            text "Your steps come directly from Apple Health and stay on this device. Stride never writes health data." color="-exact-secondary-label"
-            text "Apple does not reveal whether read access was declined. An empty result is never treated as zero steps or denied access." font="-exact-footnote" color="-exact-secondary-label" testId="privacy-note"
+          text "Your real Apple Health steps, kept on this device. Empty data stays empty." font-size=12 color="#827096" testId="privacy-note"

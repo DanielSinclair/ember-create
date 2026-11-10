@@ -1,9 +1,11 @@
 {
-  "name": "Hydration",
+  "name": "Sip Club",
   "id": "hydration",
-  "prompt": "A minimal hydration counter with an Add water button adding 250 mL and a Reset button. Use only Contract state, no TypeScript sources. Include behavior tests.",
-  "provider": "codex",
+  "prompt": "A cheerful personal water tally with a daily target.",
+  "provider": "curated-demo",
   "createdAt": "2026-11-10T03:45:20.480Z",
-  "updatedAt": "2026-11-10T03:45:20.480Z",
-  "demo": true
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "demo": true,
+  "description": "A cheerful personal water tally with a daily target.",
+  "demoVersion": 2
 }

@@ -1,0 +1,102 @@
+shape Book
+  id: string
+  title: string
+  author: string
+  description: string
+  cover: string
+
+shape SearchResult
+  ok: bool
+  title: string
+  author: string
+  description: string
+  coverDescription: string
+  uncertainty: string
+  error: string
+
+shape Reply
+  ok: bool
+  error: string
+
+component ReadingNook
+  state bookTitle = ""
+  state bookClues = ""
+  resource books = loadBooks() as shape Book[] else empty()
+  mutation searched as shape SearchResult
+  mutation added as shape Reply queue refreshes books then afterAdd
+  mutation removed as shape Reply queue refreshes books
+  derive candidate = match searched { case some(result) => result.ok, case none => false }
+  derive matchTitle = match searched { case some(result) => result.title, case none => "" }
+  derive matchAuthor = match searched { case some(result) => result.author, case none => "" }
+  derive matchDescription = match searched { case some(result) => result.description, case none => "" }
+  derive matchCover = match searched { case some(result) => result.coverDescription, case none => "" }
+  derive uncertainty = match searched { case some(result) => result.uncertainty, case none => "" }
+  derive searchError = match searched { case some(result) => result.error, case none => "" }
+  derive addError = match added { case some(result) => result.error, case none => "" }
+  action title(value: string)
+    bookTitle = value
+  action clues(value: string)
+    bookClues = value
+  action findBook
+    send searched = searchBook(bookTitle.trim(), bookClues.trim())
+  action addBook
+    send added = addBook(matchTitle, matchAuthor, matchDescription, matchCover)
+  action afterAdd
+    if addError == ""
+      bookTitle = ""
+      bookClues = ""
+      searched = none
+  action removeBook(id: string)
+    send removed = removeBook(id)
+  view
+    main height="100%" background-color="#fff1c9" color="#743b4c"
+      scroll flex=1 min-height=0
+        column padding=26 gap=24
+          row align-items="center" gap=12
+            column flex=1 gap=5
+              text "Reading Nook" font-size=34 font-weight=800 testId="title"
+              text "A little shelf of your own." font-size=15 color="#9a6471"
+            image "assets/generated/reading/reading-hero-5642aaff27ac62f1d2fe145a442cac566c7bd7ff27c3ab6c01d0df577458386e.png" width=80 height=80 object-fit="contain" background-color="#ffffff" border-radius=16 overflow="hidden" aria-label="reading illustration" testId="hero"
+          column gap=12 padding=20 background-color="#fffaec" border-radius=24
+            text "FIND YOUR NEXT BOOK" font-size=11 letter-spacing=2 font-weight=700
+            input value=bookTitle input=title placeholder="Title, or what you remember…" padding=12 color="#743b4c" testId="book-title"
+            textarea value=bookClues input=clues rows=2 placeholder="Describe the story or the cover" padding=12 color="#743b4c" testId="book-clues"
+            button press=findBook disabled=(pending(searched) or pending(added) or (bookTitle.trim() == "" and bookClues.trim() == "")) appearance="none" padding=16 min-height=54 background-color="#93465c" color="#fff1c9" border-radius=27 testId="find-book"
+              text (pending(searched) ? "Looking through memory…" : "Find my book") font-size=18 font-weight=700
+          if searchError != "" and not pending(searched)
+            text searchError color="#9b3e39" testId="search-error"
+          if candidate and not pending(searched)
+            column gap=12 padding=20 background-color="#f0d9a8" border-radius=24 testId="candidate"
+              text "A POSSIBLE MATCH" font-size=11 letter-spacing=2
+              text matchTitle font-size=26 font-weight=800 testId="match-title"
+              text matchAuthor font-size=17 color="#9a6471"
+              text matchDescription font-size=15
+              text uncertainty font-size=12 color="#9a6471"
+              button press=addBook disabled=pending(added) appearance="none" padding=16 min-height=54 background-color="#743b4c" color="#fff1c9" border-radius=27 testId="add-book"
+                text (pending(added) ? "Painting your cover…" : "Paint a cover + add to shelf") font-weight=700
+              text "Identified from model memory. Covers are AI reconstructions, not verified editions." font-size=11 color="#9a6471"
+          if addError != "" and not pending(added)
+            text addError color="#9b3e39" testId="add-error"
+          row align-items="center"
+            text "YOUR BOOKSHELF" font-size=12 letter-spacing=2 font-weight=700 flex=1
+            text `${books.length} ${books.length == 1 ? "book" : "books"}` font-size=13 color="#9a6471" testId="book-count"
+          if pending(books)
+            text "Opening your shelf…" testId="shelf-loading"
+          else if failed(books)
+            text "Couldn't open your saved books. Please try reopening the app." testId="shelf-error"
+          else if books.length == 0
+            column gap=8 padding="20 0"
+              text "Every shelf starts with one story." font-size=23 font-weight=600 testId="empty-shelf"
+              text "Find a title above, then make it yours." font-size=15 color="#9a6471"
+          else
+            for book in books key=book.id
+              column gap=12
+                row gap=18 align-items="start"
+                  image book.cover width=104 height=150 object-fit="cover" border-radius=8
+                  column flex=1 min-width=0 gap=7
+                    text book.title font-size=21 font-weight=700
+                    text book.author font-size=14 color="#9a6471"
+                    text book.description font-size=13 color="#9a6471" line-clamp=3
+                    button press=removeBook(book.id) appearance="none" padding="10 0" min-height=44 color="#743b4c" testId=`remove-${book.id}`
+                      text "Remove from shelf" font-size=12
+                row height=7 background-color="#c89e73" border-radius=4

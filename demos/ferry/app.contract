@@ -1,0 +1,45 @@
+component BayDay
+  state ferryToSF = true persist
+  state ferryPacked = false persist
+  state ferryTicket = false persist
+  state ferryChoice = "6:30 AM → 6:50 AM" persist
+  action direction
+    ferryToSF = not ferryToSF
+    ferryChoice = ferryToSF ? "7:50 AM → 8:10 AM" : "6:30 AM → 6:50 AM"
+  action choose(value: string)
+    ferryChoice = value
+  action pack
+    ferryPacked = not ferryPacked
+  action ticket
+    ferryTicket = not ferryTicket
+  view
+    main height="100%" background-color="#e0f4eb" color="#143b50"
+      scroll flex=1 min-height=0
+        column padding=24 gap=22
+          row align-items="center"
+            text "Bay Day" font-size=40 font-weight=800 flex=1 testId="title"
+            text "ALAMEDA ↔ SF" font-size=11 letter-spacing=1 font-weight=700
+          image "assets/generated/ferry/ferry-hero-192cc7a0d92475bd3dbee0de253f8f3597a0fbff761a846aed3357f589bd73e3.png" width=144 height=144 object-fit="contain" background-color="#ffffff" border-radius=24 overflow="hidden" aria-label="ferry illustration" testId="hero"
+          column padding=22 gap=16 background-color="#153d53" color="#f1f8ed" border-radius=26
+            text "YOUR CROSSING" font-size=11 letter-spacing=2
+            text (ferryToSF ? "Alameda → San Francisco" : "San Francisco → Alameda") font-size=26 font-weight=700 testId="direction"
+            button press=direction appearance="none" padding=12 min-height=44 background-color="#2e657a" color="#ffffff" border-radius=22 testId="swap"
+              text "Swap direction"
+          text "SELECTED WEEKDAY SAILINGS" font-size=12 letter-spacing=2 font-weight=700
+          column gap=8
+            for sailing in (ferryToSF ? ["6:30 AM → 6:50 AM", "7:25 AM → 7:45 AM", "8:45 AM → 9:05 AM"] : ["7:50 AM → 8:10 AM", "10:25 AM → 10:45 AM", "11:25 AM → 11:45 AM"]) key=sailing
+              button press=choose(sailing) appearance="none" padding=16 min-height=52 border-radius=18 background-color=(ferryChoice == sailing ? "#eb9b5a" : "#ffffff") color="#143b50" testId=`sailing-${sailing}`
+                text sailing font-size=18 font-weight=700
+          text `Your pick: ${ferryChoice}` font-size=18 font-weight=700 testId="outing"
+          text "Nov 2, 2026 schedule · selected weekday trips, not live departures." font-size=12 color="#526d73" testId="schedule-note"
+          link href="https://www.sfbayferry.com/routes-schedules/alameda-seaplane/" color="#266a88" min-height=44
+            text "Check the latest SF Bay Ferry schedule"
+          column gap=10
+            button press=ticket appearance="none" padding=16 min-height=56 background-color="#ffffff" color="#143b50" border-radius=18 testId="ticket"
+              row gap=12
+                image (ferryTicket ? "symbol:sf/checkmark.circle.fill" : "symbol:sf/circle") font-size=22
+                text "Check current sailing + fare"
+            button press=pack appearance="none" padding=16 min-height=56 background-color="#ffffff" color="#143b50" border-radius=18 testId="pack"
+              row gap=12
+                image (ferryPacked ? "symbol:sf/checkmark.circle.fill" : "symbol:sf/circle") font-size=22
+                text "Bring a layer for the deck"

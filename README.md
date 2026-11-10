@@ -17,11 +17,13 @@ Requires macOS, Xcode with an iOS simulator, Bun 1.4.2, and Rust 1.97.0. Initial
 
 - **Enter:** generate · **Shift+Enter:** new line
 - **Ctrl+E:** edit the selected app · **Ctrl+B:** saved apps
-- **Ctrl+O:** build/open the simulator
+- **Ctrl+O:** open simulator · **Ctrl+T:** submit the selected app to TestFlight
 - Drop an image to use it as a reference; **Esc** removes it.
 
 Describe the behavior and look together: “A warm editorial focus timer with cream paper, terracotta controls, and no cards.”
 
 CLI commands also work through `bunx --no-install exact-create`, for example `list`, `open focus`, or `generate "A hydration counter"`. Add `--provider codex` to use a logged-in Codex CLI.
 
-First packaged launch prepares pinned sources in a persistent local runtime. No API keys are bundled. [Setup details](QUICKSTART.md) · [Development](CONTRIBUTING.md)
+Ten [colorful demos](DEMOS.md) include a budget, ferry planner, and AI bookshelf. Custom artwork is planned, generated in parallel, and delivered through live updates.
+
+First packaged launch prepares pinned sources in a persistent local runtime. The npm package excludes credentials. In-app AI calls OpenRouter directly; private builds embed your local key, which is recoverable from the app. [Setup details](QUICKSTART.md) · [Development](CONTRIBUTING.md)

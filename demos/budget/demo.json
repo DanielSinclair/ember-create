@@ -1,0 +1,11 @@
+{
+  "id": "budget",
+  "name": "Pocket Money",
+  "description": "A local weekly spending envelope and quick expense log.",
+  "prompt": "A local weekly spending envelope and quick expense log.",
+  "provider": "curated-demo",
+  "demo": true,
+  "demoVersion": 2,
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "createdAt": "2026-11-10T05:19:35.015068+00:00"
+}

@@ -48,10 +48,11 @@ Without installing the command, run `./bin/exact-create` from the checkout. Supp
 | An app description | Create a new project; Ember chooses its name and ID |
 | `/builds`, `/apps`, or Ctrl+B | Open the saved-build picker; use arrows and Enter to select |
 | `/open <id>` | Switch to a saved project |
-| `/edit <changes>` | Revise the selected project |
+| `/edit <changes>` or Ctrl+E | Revise the selected project |
 | `/image <path>` | Attach a screenshot to subsequent generation requests |
 | `/image clear` | Remove the attachment |
 | `/simulator` or Ctrl+O | Build/launch the iOS container |
+| Ctrl+T | Submit the selected standalone app to TestFlight after preflight |
 | `/help` | Show command help |
 
 The TUI always uses Muse Ember. Place `OPENROUTER_API_KEY=your-key` in the root `.env`, or export it before launch. The installed command loads this file even when invoked outside the checkout. Keep `.env` local. The CLI supports Codex without an OpenRouter key:
@@ -113,9 +114,9 @@ For TUI drag-and-drop, drop a file directly into the composer. The terminal must
 
 ## Apple Health demo
 
-The container includes `@exact/health` for read-only access to supported HealthKit data. Health-related prompts receive that package's interface and the [Stride pedometer reference](demos/pedometer/README.md).
+The container includes `@exact/health` for read-only access to supported HealthKit data. Health-related prompts receive that package's interface and the [Step Garden pedometer reference](demos/pedometer/README.md).
 
-Stride requests access only after the person chooses Connect Apple Health. It contains no invented step samples. A simulator may have no HealthKit data; a device with known data is needed to verify authorization and totals. The demo was authored directly to exercise the native capability, independently of model-generation tests.
+Step Garden requests access only after the person chooses Connect Apple Health. It contains no invented step samples. A simulator may have no HealthKit data; a device with known data is needed to verify authorization and totals. The demo was authored directly to exercise the native capability, independently of model-generation tests.
 
 Included examples in the build picker are labeled **[Demo]** so they remain distinct from generated projects.
 
@@ -129,7 +130,10 @@ Included examples in the build picker are labeled **[Demo]** so they remain dist
 | `./bin/exact-create generate "Counter" --fixture --id demo` | Deterministic counter without a model call |
 | `./bin/exact-create generate "…" --json` | JSONL progress, diagnostics, usage, and result |
 
-The default server port is `8791`. Keep that default for the simplest flow: project activation currently connects to it.
+The local development preview uses port `8791` to deliver live updates to the
+simulator. Keep that default for the simplest flow: project activation currently
+connects to it. In-app Muse calls go directly to OpenRouter; they do not depend
+on this preview process or a hosted application server.
 
 ## Troubleshooting
 
@@ -140,3 +144,28 @@ The default server port is `8791`. Keep that default for the simplest flow: proj
 - **A capability requires rebuilding:** the demo container has a fixed runtime and grants. Contract edits cannot add native modules or entitlements.
 
 An app being staged means its source was accepted for the development stream. Confirm its visible screen and interactions in the simulator before treating the update as delivered.
+
+## TestFlight
+
+Press **Ctrl+T** for the selected standalone app, or run:
+
+```sh
+exact-create testflight reading --dry-run
+exact-create testflight reading
+exact-create testflight-container --dry-run
+exact-create testflight-container
+```
+
+The container command embeds all ten demos and their artwork. The standalone
+command uses a separate bundle ID for each generated app. Both include the app icon.
+
+Install the `asc` CLI and authenticate App Store Connect. New app records also
+require `asc web auth login`. Set `EXACT_IDENTITY` to an Apple Distribution
+identity and `EXACT_PROFILE` to its matching App Store provisioning profile.
+Preflight creates a reviewable release workspace and reports missing requirements.
+Uploading is separate from assigning beta testers; the tool does not claim an app
+is available on your device just because Apple accepted the upload.
+
+In-app Muse calls use OpenRouter directly. The local `OPENROUTER_API_KEY` is
+compiled into private builds that use AI; it is recoverable from those builds.
+Keep credentials out of Git and npm. No server deployment is required.

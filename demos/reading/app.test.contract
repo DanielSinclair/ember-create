@@ -1,0 +1,9 @@
+test "a fresh shelf starts empty and accepts book clues"
+  clock data
+  expect text "title" == "Reading Nook"
+  expect text "book-count" == "0 books"
+  expect tree has "empty-shelf"
+  type "book-title" "The Little Prince"
+  type "book-clues" "A small prince visits planets."
+  expect state bookTitle == "The Little Prince"
+  expect state bookClues == "A small prince visits planets."

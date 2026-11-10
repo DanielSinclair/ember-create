@@ -1,0 +1,21 @@
+[
+  {
+    "id": "focus-hero",
+    "purpose": "Friendly editorial sticker hero for the first screen",
+    "placement": "hero region below the screen title; keep controls and figures as real UI",
+    "width": 128,
+    "height": 128,
+    "style": "handmade 3D clay and paper-cut sticker, terracotta and butter yellow, soft tactile shading, crisp silhouette",
+    "prompt": "a sculptural terracotta kitchen timer beside a small orange sun and folded paper. Handmade 3D clay and paper-cut illustration in terracotta and butter yellow. Charming personal app sticker, balanced centered composition, soft tactile shadows, no lettering, no UI, no frame. Transparent background.",
+    "background": "transparent",
+    "mimeType": "image/png",
+    "actualWidth": 128,
+    "actualHeight": 128,
+    "path": "assets/generated/focus/focus-hero-704719533f7f1c9dee13ef171ef2f951c850144bb2ef05c3bbdf8c12795df608.png",
+    "sha256": "704719533f7f1c9dee13ef171ef2f951c850144bb2ef05c3bbdf8c12795df608",
+    "model": "meta/muse-image",
+    "generatedWidth": 1600,
+    "generatedHeight": 1600,
+    "hasAlpha": false
+  }
+]

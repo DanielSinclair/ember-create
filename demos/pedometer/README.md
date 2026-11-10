@@ -1,8 +1,12 @@
-# Stride pedometer demo
+# Step Garden pedometer demo
 
-Stride reads today's step total through Exact's `@exact/health` package, backed
+Step Garden reads today's step total through Exact's `@exact/health` package, backed
 by HealthKit on iOS. It requests only Steps, after the person presses Connect
-Apple Health. It does not write health records, transmit them, or save a copy.
+Health. It does not write health records, transmit them, or save a copy.
+
+Its lilac-and-lime garden grows the leaf and stem from real progress toward the
+selected 5,000- or 10,000-step goal. Unknown data shows a waiting plant; it never
+turns missing samples into zero progress. The goal is remembered on the device.
 
 The day begins at local calendar midnight, including daylight-saving changes.
 The query refreshes each minute, on Refresh, and on the package's health-store

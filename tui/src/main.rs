@@ -237,7 +237,14 @@ fn event_status<'a>(kind: &str, message: &'a str) -> (Option<&'a str>, &'static 
     match kind {
         "error" => (Some("Failed — see output"), "error"),
         "diagnostics" => (Some("Checking issues"), "warning"),
-        "result" | "selected" => (Some("Finishing"), "success"),
+        "result" | "selected" | "assets-staged" => (Some("Finishing"), "success"),
+        "asset_plan" => (Some("Artwork plan ready"), "prompt"),
+        "asset_started" => (Some("Muse Image · generating artwork"), "thinking"),
+        "asset_ready" | "asset_cached" => (Some(message), "success"),
+        "asset_error" => (Some("Artwork generation failed"), "error"),
+        "status" if message.contains("planning app artwork") => {
+            (Some("Thinking · planning artwork"), "thinking")
+        }
         "status" if message.contains("naming") => (Some("Thinking · naming your app"), "thinking"),
         "status" if message.starts_with("Generating") => {
             (Some("Thinking · writing your contract"), "thinking")
@@ -341,7 +348,7 @@ fn read_lines<R: std::io::Read>(reader: R, state: &Arc<Mutex<State>>, native: &N
             .filter(|cost| cost.is_finite() && *cost >= 0.0)
         {
             s.entries.push((
-                format!("OpenRouter cost: ${cost:.6} USD (including naming and repairs)"),
+                format!("OpenRouter cost: ${cost:.6} USD (including naming, artwork and repairs)"),
                 "cost".into(),
             ));
         }
@@ -413,6 +420,10 @@ impl DataSource for Bridge {
                 self.native.changed("session");
                 true
             }
+            "publishSelected" => {
+                self.note("> Submit selected app to TestFlight");
+                self.start(vec!["testflight".into(), "--json".into()])
+            }
             "launchSimulator" => {
                 self.note("> Launch iOS simulator");
                 self.start(vec!["ios".into(), "--json".into()])
@@ -473,7 +484,7 @@ mod tests {
             .any(|(text, _)| text == "Generation time: 12.0s"));
         assert_eq!(
             state.entries.last().unwrap().0,
-            "OpenRouter cost: $0.003736 USD (including naming and repairs)"
+            "OpenRouter cost: $0.003736 USD (including naming, artwork and repairs)"
         );
         assert_eq!(
             event_status("status", "Repairing demo (2/3)"),

@@ -1,0 +1,11 @@
+{
+  "id": "mood",
+  "name": "Soft Landing",
+  "description": "A gentle mood check-in with a saved note.",
+  "prompt": "A gentle mood check-in with a saved note.",
+  "provider": "curated-demo",
+  "demo": true,
+  "demoVersion": 2,
+  "updatedAt": "2026-11-10T05:19:35.015068+00:00",
+  "createdAt": "2026-11-10T05:19:35.015068+00:00"
+}

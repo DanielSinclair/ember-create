@@ -4,7 +4,7 @@ routes nav
 fn pad2(n: number): string = n < 10 ? `0${n}` : `${n}`
 fn mmss(ms: number): string = `${floor(ceil(ms / 1000) / 60)}:${pad2(ceil(ms / 1000) % 60)}`
 
-component EditorialFocusTimerV2
+component PaperHour
   state minutes = 25
   state endsAt = 0
   state now = 0
@@ -46,12 +46,14 @@ component EditorialFocusTimerV2
     remainingMs = m * 60000
     now = performanceNow()
   view
-    main height="100%" background-color="#f7f1e5" color="#2b2118" testId="app"
+    main height="100%" background-color="#fff2cf" color="#2b2118" testId="app"
       scroll flex=1 min-height=0
         column padding=28 gap=28
           column gap=6
-            text "Editorial Focus" font-size=34 font-weight=700
-            text "A printed-journal timer" font-size=14 color="#7a6a58"
+            text "Paper Hour" font-size=36 font-weight=800 testId="title"
+            row align-items="center" gap=12
+              text "Make room for one good thing." font-size=14 color="#7a6a58" flex=1
+              image "assets/generated/focus/focus-hero-704719533f7f1c9dee13ef171ef2f951c850144bb2ef05c3bbdf8c12795df608.png" width=64 height=64 object-fit="contain" background-color="#ffffff" border-radius=16 overflow="hidden" aria-label="focus illustration" testId="hero"
           row height=1 background-color="#2b2118"
           column gap=8 align-items="center" padding="12 0"
             text status font-size=13 color="#7a6a58" testId="status"
@@ -61,17 +63,17 @@ component EditorialFocusTimerV2
           column gap=14
             text "Interval" font-size=13 font-weight=700 color="#7a6a58"
             row gap=10
-              button press=choose(5) appearance="none" background-color=(minutes == 5 ? "#2b2118" : "#efe6d6") color=(minutes == 5 ? "#f7f1e5" : "#2b2118") padding="12 16" min-height=44 border-radius=999 testId="min-5"
+              button press=choose(5) appearance="none" background-color=(minutes == 5 ? "#2b2118" : "#efe6d6") color=(minutes == 5 ? "#fff2cf" : "#2b2118") padding="12 16" min-height=44 border-radius=999 testId="min-5"
                 text "5 min"
-              button press=choose(15) appearance="none" background-color=(minutes == 15 ? "#2b2118" : "#efe6d6") color=(minutes == 15 ? "#f7f1e5" : "#2b2118") padding="12 16" min-height=44 border-radius=999 testId="min-15"
+              button press=choose(15) appearance="none" background-color=(minutes == 15 ? "#2b2118" : "#efe6d6") color=(minutes == 15 ? "#fff2cf" : "#2b2118") padding="12 16" min-height=44 border-radius=999 testId="min-15"
                 text "15 min"
-              button press=choose(25) appearance="none" background-color=(minutes == 25 ? "#2b2118" : "#efe6d6") color=(minutes == 25 ? "#f7f1e5" : "#2b2118") padding="12 16" min-height=44 border-radius=999 testId="min-25"
+              button press=choose(25) appearance="none" background-color=(minutes == 25 ? "#2b2118" : "#efe6d6") color=(minutes == 25 ? "#fff2cf" : "#2b2118") padding="12 16" min-height=44 border-radius=999 testId="min-25"
                 text "25 min"
           row height=1 background-color="#d9cfc0"
           row gap=12
-            button press=toggle appearance="none" background-color="#b0563a" color="#ffffff" padding="14 22" min-height=52 border-radius=999 flex=1 testId="start-pause"
+            button press=toggle appearance="none" background-color="#bd583b" color="#ffffff" padding="14 22" min-height=52 border-radius=999 flex=1 testId="start-pause"
               text startLabel font-size=17 font-weight=700
-            button press=resetTimer appearance="none" background-color="#f7f1e5" color="#2b2118" padding="14 22" min-height=52 border-radius=999 testId="reset"
+            button press=resetTimer appearance="none" background-color="#fff2cf" color="#2b2118" padding="14 22" min-height=52 border-radius=999 testId="reset"
               text "Reset" font-size=17
           row height=1 background-color="#d9cfc0"
-          text "Set an interval, begin, and let the page do the rest." font-size=14 color="#7a6a58"
+          text "A page of time, just for you." font-size=14 color="#7a6a58"
