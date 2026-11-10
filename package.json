@@ -1,11 +1,11 @@
 {
   "name": "exact-create",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate iOS apps with Muse Ember and run them in one Exact container.",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DanielSinclair/ember-create.git"
+    "url": "git+https://github.com/DanielSinclair/ember-create.git"
   },
   "os": [
     "darwin"
@@ -38,7 +38,8 @@
     "CONTRIBUTING.md",
     "tools/testflight.mjs",
     "tools/demo-container.mjs",
-    "DEMOS.md"
+    "DEMOS.md",
+    "src/embedded-key.json"
   ],
   "scripts": {
     "start": "bun src/cli.ts",

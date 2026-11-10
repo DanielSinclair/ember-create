@@ -10,7 +10,7 @@ const manifest = JSON.parse(await readFile(join(source, 'package.json'), 'utf8')
 const args = process.argv.slice(2);
 if (args[0] === '--version') { console.log(manifest.version); process.exit(0); }
 if (args[0] === '--help' || args[0] === '-h') {
-  console.log('Exact Create\n  No arguments: open the TUI\n  setup: prepare pinned Exact dependencies\n  generate "Describe an app" | list | open <id> | ios\n\nRequires macOS, Xcode, Bun 1.4.2 and Rust 1.97.0.\nFirst launch prepares a persistent runtime; later launches reuse its builds.\nSet OPENROUTER_API_KEY in your environment. No credentials are included.');
+  console.log('Exact Create\n  No arguments: open the TUI\n  setup: prepare pinned Exact dependencies\n  generate "Describe an app" | list | open <id> | ios\n\nRequires macOS, Xcode, Bun 1.4.2 and Rust 1.97.0.\nFirst launch prepares a persistent runtime; later launches reuse its builds.\nA demo OpenRouter key is bundled. Set OPENROUTER_API_KEY to use your own key.');
   process.exit(0);
 }
 if (process.platform !== 'darwin') throw new Error('Exact Create currently requires macOS for its iOS simulator.');

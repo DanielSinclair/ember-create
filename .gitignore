@@ -19,3 +19,5 @@ container/muse.ts
 !.env.example
 
 /container/assets/generated/
+
+/src/embedded-key.json

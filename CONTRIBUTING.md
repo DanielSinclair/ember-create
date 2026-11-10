@@ -55,3 +55,5 @@ That verification command may build its own artifacts. Record model time, compil
 - Preserve `project.json` as the project record. Editing generated sibling files alone does not change what the CLI stages.
 
 For bug reports, include the command, expected behavior, relevant diagnostics, toolchain versions, and whether the problem occurs on a cold or warm run. Remove credentials and private prompt content from shared logs.
+
+For releases, run `bun tools/embed-key.mjs` with `OPENROUTER_API_KEY` configured before packing. It writes the ignored `src/embedded-key.json`, which is intentionally included in npm releases. Never commit the payload or print the decoded key.

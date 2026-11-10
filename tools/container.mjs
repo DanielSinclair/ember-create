@@ -1,9 +1,12 @@
+import { configureOpenRouterEnvironment } from '../src/credentials.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, openSync, closeSync, cpSync, symlinkSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+
+configureOpenRouterEnvironment();
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = resolve(ROOT, 'container');

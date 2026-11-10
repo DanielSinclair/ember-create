@@ -78,5 +78,5 @@ else
   ln -s "$project_root/bin/exact-create" "$command_dir/exact-create"
 fi
 
-echo "Setup complete. Ensure $command_dir is on PATH, set OPENROUTER_API_KEY, then run exact-create."
+echo "Setup complete. Ensure $command_dir is on PATH, then run exact-create. OPENROUTER_API_KEY optionally overrides the bundled demo key."
 echo "Check native toolchains with: $BUN $project_root/exact/scripts/exact.mjs setup --check"

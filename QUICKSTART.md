@@ -6,7 +6,7 @@
 - Bun **1.4.2**. The launchers recognize `~/.bun-1.4.2/bin/bun`; set `BUN` to another installation if needed.
 - Rust **1.97.0** through rustup. Exact's first web/native build may request additional targets or toolchains.
 - The Exact source checkout at `./exact`. `exact-templates/` is reference material for this prototype.
-- An OpenRouter API key for the TUI, or a logged-in Codex CLI for CLI generation.
+- No AI login is needed with the bundled demo key. Optionally supply your own OpenRouter key, or use a logged-in Codex CLI.
 
 Check Exact's toolchain requirements without starting a build:
 
@@ -55,7 +55,7 @@ Without installing the command, run `./bin/exact-create` from the checkout. Supp
 | Ctrl+T | Submit the selected standalone app to TestFlight after preflight |
 | `/help` | Show command help |
 
-The TUI always uses Muse Ember. Place `OPENROUTER_API_KEY=your-key` in the root `.env`, or export it before launch. The installed command loads this file even when invoked outside the checkout. Keep `.env` local. The CLI supports Codex without an OpenRouter key:
+The TUI always uses Muse Ember. Published packages include an obfuscated demo key. To override it, place `OPENROUTER_API_KEY=your-key` in the root `.env`, or export it before launch. The installed command loads this file even when invoked outside the checkout. Keep `.env` local. The CLI supports Codex without an OpenRouter key:
 
 ```sh
 ./bin/exact-create generate "A counter with increment and reset" --provider codex --id counter
@@ -168,4 +168,4 @@ is available on your device just because Apple accepted the upload.
 
 In-app Muse calls use OpenRouter directly. The local `OPENROUTER_API_KEY` is
 compiled into private builds that use AI; it is recoverable from those builds.
-Keep credentials out of Git and npm. No server deployment is required.
+Keep plaintext credentials out of Git. The published demo package intentionally includes an obfuscated default key; it is recoverable and is not a security boundary. A user-provided OPENROUTER_API_KEY takes precedence. No server deployment is required.
